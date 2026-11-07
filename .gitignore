@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Allplan-Laufzeitreste
+___pyp__
+*.log
+
+# Bauergebnisse: gehoeren an den GitHub-Release, nicht ins Repo
+dist/
+release/
+
+# Editor / Betriebssystem
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Werkzeug-Marker der Entwicklungsumgebung
+.claude/
