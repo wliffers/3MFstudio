@@ -1,0 +1,656 @@
+{
+"source": "Druckermaße aus den Druckerprofilen von Bambu Studio (nur Name, Druckfläche, Bauhöhe)",
+"printers": [
+{
+"name": "Bambu Lab A1",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 256.0
+},
+{
+"name": "Bambu Lab A1 mini",
+"brand": "Bambu Lab",
+"width": 180.0,
+"depth": 180.0,
+"height": 180.0
+},
+{
+"name": "Bambu Lab A2L",
+"brand": "Bambu Lab",
+"width": 330.0,
+"depth": 320.0,
+"height": 325.0
+},
+{
+"name": "Bambu Lab H2C",
+"brand": "Bambu Lab",
+"width": 330.0,
+"depth": 320.0,
+"height": 325.0
+},
+{
+"name": "Bambu Lab H2D",
+"brand": "Bambu Lab",
+"width": 350.0,
+"depth": 320.0,
+"height": 325.0
+},
+{
+"name": "Bambu Lab H2D Pro",
+"brand": "Bambu Lab",
+"width": 350.0,
+"depth": 320.0,
+"height": 325.0
+},
+{
+"name": "Bambu Lab H2S",
+"brand": "Bambu Lab",
+"width": 340.0,
+"depth": 320.0,
+"height": 340.0
+},
+{
+"name": "Bambu Lab H3C",
+"brand": "Bambu Lab",
+"width": 330.0,
+"depth": 320.0,
+"height": 325.0
+},
+{
+"name": "Bambu Lab P1P",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 250.0
+},
+{
+"name": "Bambu Lab P1S",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 250.0
+},
+{
+"name": "Bambu Lab P2S",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 256.0
+},
+{
+"name": "Bambu Lab X1",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 250.0
+},
+{
+"name": "Bambu Lab X1 Carbon",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 250.0
+},
+{
+"name": "Bambu Lab X1E",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 250.0
+},
+{
+"name": "Bambu Lab X2D",
+"brand": "Bambu Lab",
+"width": 256.0,
+"depth": 256.0,
+"height": 261.0
+},
+{
+"name": "Anker M5",
+"brand": "Anker",
+"width": 235.0,
+"depth": 235.0,
+"height": 250.0
+},
+{
+"name": "Anker M5C",
+"brand": "Anker",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Anycubic 4Max Pro",
+"brand": "Anycubic",
+"width": 270.0,
+"depth": 205.0,
+"height": 200.0
+},
+{
+"name": "Anycubic 4Max Pro 2",
+"brand": "Anycubic",
+"width": 270.0,
+"depth": 210.0,
+"height": 190.0
+},
+{
+"name": "Anycubic Chiron",
+"brand": "Anycubic",
+"width": 400.0,
+"depth": 400.0,
+"height": 450.0
+},
+{
+"name": "Anycubic i3 Mega S",
+"brand": "Anycubic",
+"width": 210.0,
+"depth": 210.0,
+"height": 205.0
+},
+{
+"name": "Anycubic Kobra 2",
+"brand": "Anycubic",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Anycubic Kobra Max",
+"brand": "Anycubic",
+"width": 400.0,
+"depth": 400.0,
+"height": 450.0
+},
+{
+"name": "Anycubic Kobra Plus",
+"brand": "Anycubic",
+"width": 300.0,
+"depth": 300.0,
+"height": 350.0
+},
+{
+"name": "Anycubic Vyper",
+"brand": "Anycubic",
+"width": 250.0,
+"depth": 255.0,
+"height": 265.0
+},
+{
+"name": "Creality CR-10 Max",
+"brand": "Creality",
+"width": 450.0,
+"depth": 450.0,
+"height": 470.0
+},
+{
+"name": "Creality CR-10 V2",
+"brand": "Creality",
+"width": 300.0,
+"depth": 300.0,
+"height": 400.0
+},
+{
+"name": "Creality CR-6 Max",
+"brand": "Creality",
+"width": 390.0,
+"depth": 390.0,
+"height": 400.0
+},
+{
+"name": "Creality CR-6 SE",
+"brand": "Creality",
+"width": 225.0,
+"depth": 235.0,
+"height": 250.0
+},
+{
+"name": "Creality Ender-3 S1",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 270.0
+},
+{
+"name": "Creality Ender-3 S1 Pro",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 270.0
+},
+{
+"name": "Creality Ender-3 V2",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Creality Ender-3 V3",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Creality Ender-3 V3 KE",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 245.0
+},
+{
+"name": "Creality Ender-3 V3 Plus",
+"brand": "Creality",
+"width": 300.0,
+"depth": 300.0,
+"height": 330.0
+},
+{
+"name": "Creality Ender-5",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 300.0
+},
+{
+"name": "Creality Ender-5 Plus",
+"brand": "Creality",
+"width": 350.0,
+"depth": 350.0,
+"height": 400.0
+},
+{
+"name": "Creality Ender-5 S1",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 300.0
+},
+{
+"name": "Creality Ender-5S",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 300.0
+},
+{
+"name": "Creality Ender-6",
+"brand": "Creality",
+"width": 250.0,
+"depth": 250.0,
+"height": 400.0
+},
+{
+"name": "Creality K1",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Creality K1 Max",
+"brand": "Creality",
+"width": 300.0,
+"depth": 300.0,
+"height": 300.0
+},
+{
+"name": "Creality K1C",
+"brand": "Creality",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Elegoo Neptune",
+"brand": "Elegoo",
+"width": 210.0,
+"depth": 210.0,
+"height": 200.0
+},
+{
+"name": "Elegoo Neptune 2",
+"brand": "Elegoo",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Elegoo Neptune 2D",
+"brand": "Elegoo",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Elegoo Neptune 2S",
+"brand": "Elegoo",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+},
+{
+"name": "Elegoo Neptune 3",
+"brand": "Elegoo",
+"width": 220.0,
+"depth": 220.0,
+"height": 280.0
+},
+{
+"name": "Elegoo Neptune 3 Max",
+"brand": "Elegoo",
+"width": 420.0,
+"depth": 420.0,
+"height": 500.0
+},
+{
+"name": "Elegoo Neptune 3 Plus",
+"brand": "Elegoo",
+"width": 320.0,
+"depth": 320.0,
+"height": 400.0
+},
+{
+"name": "Elegoo Neptune 3 Pro",
+"brand": "Elegoo",
+"width": 225.0,
+"depth": 225.0,
+"height": 280.0
+},
+{
+"name": "Elegoo Neptune 4",
+"brand": "Elegoo",
+"width": 225.0,
+"depth": 225.0,
+"height": 265.0
+},
+{
+"name": "Elegoo Neptune 4 Max",
+"brand": "Elegoo",
+"width": 420.0,
+"depth": 420.0,
+"height": 480.0
+},
+{
+"name": "Elegoo Neptune 4 Plus",
+"brand": "Elegoo",
+"width": 320.0,
+"depth": 320.0,
+"height": 385.0
+},
+{
+"name": "Elegoo Neptune 4 Pro",
+"brand": "Elegoo",
+"width": 235.0,
+"depth": 230.0,
+"height": 265.0
+},
+{
+"name": "Elegoo Neptune X",
+"brand": "Elegoo",
+"width": 220.0,
+"depth": 220.0,
+"height": 300.0
+},
+{
+"name": "Geeetech A10 M",
+"brand": "Geeetech",
+"width": 220.0,
+"depth": 220.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A10 Pro",
+"brand": "Geeetech",
+"width": 220.0,
+"depth": 220.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A10 T",
+"brand": "Geeetech",
+"width": 220.0,
+"depth": 220.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A20",
+"brand": "Geeetech",
+"width": 250.0,
+"depth": 250.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A20 M",
+"brand": "Geeetech",
+"width": 250.0,
+"depth": 250.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A20 T",
+"brand": "Geeetech",
+"width": 250.0,
+"depth": 250.0,
+"height": 260.0
+},
+{
+"name": "Geeetech A30 M",
+"brand": "Geeetech",
+"width": 320.0,
+"depth": 320.0,
+"height": 420.0
+},
+{
+"name": "Geeetech A30 Pro",
+"brand": "Geeetech",
+"width": 320.0,
+"depth": 320.0,
+"height": 420.0
+},
+{
+"name": "Geeetech A30 T",
+"brand": "Geeetech",
+"width": 320.0,
+"depth": 320.0,
+"height": 420.0
+},
+{
+"name": "Geeetech M1",
+"brand": "Geeetech",
+"width": 105.0,
+"depth": 105.0,
+"height": 95.0
+},
+{
+"name": "Geeetech Mizar",
+"brand": "Geeetech",
+"width": 220.0,
+"depth": 220.0,
+"height": 260.0
+},
+{
+"name": "Geeetech Mizar M",
+"brand": "Geeetech",
+"width": 255.0,
+"depth": 255.0,
+"height": 260.0
+},
+{
+"name": "Geeetech Mizar Max",
+"brand": "Geeetech",
+"width": 320.0,
+"depth": 320.0,
+"height": 400.0
+},
+{
+"name": "Geeetech Mizar Pro",
+"brand": "Geeetech",
+"width": 220.0,
+"depth": 220.0,
+"height": 260.0
+},
+{
+"name": "Geeetech Mizar S",
+"brand": "Geeetech",
+"width": 255.0,
+"depth": 255.0,
+"height": 260.0
+},
+{
+"name": "Geeetech Thunder",
+"brand": "Geeetech",
+"width": 250.0,
+"depth": 250.0,
+"height": 260.0
+},
+{
+"name": "Prusa MINI",
+"brand": "Prusa",
+"width": 180.0,
+"depth": 180.0,
+"height": 180.0
+},
+{
+"name": "Prusa MK3S",
+"brand": "Prusa",
+"width": 250.0,
+"depth": 210.0,
+"height": 210.0
+},
+{
+"name": "Qidi Q1 Pro",
+"brand": "Qidi",
+"width": 245.0,
+"depth": 245.0,
+"height": 240.0
+},
+{
+"name": "Qidi X-CF Pro",
+"brand": "Qidi",
+"width": 300.0,
+"depth": 250.0,
+"height": 300.0
+},
+{
+"name": "Qidi X-Max",
+"brand": "Qidi",
+"width": 300.0,
+"depth": 250.0,
+"height": 300.0
+},
+{
+"name": "Qidi X-Max 3",
+"brand": "Qidi",
+"width": 325.0,
+"depth": 325.0,
+"height": 315.0
+},
+{
+"name": "Qidi X-Plus",
+"brand": "Qidi",
+"width": 270.0,
+"depth": 200.0,
+"height": 200.0
+},
+{
+"name": "Qidi X-Plus 3",
+"brand": "Qidi",
+"width": 280.0,
+"depth": 280.0,
+"height": 270.0
+},
+{
+"name": "Qidi X-Plus 4",
+"brand": "Qidi",
+"width": 305.0,
+"depth": 305.0,
+"height": 280.0
+},
+{
+"name": "Qidi X-Smart 3",
+"brand": "Qidi",
+"width": 175.0,
+"depth": 180.0,
+"height": 170.0
+},
+{
+"name": "Tronxy X5SA 400 Marlin Firmware",
+"brand": "Tronxy",
+"width": 400.0,
+"depth": 400.0,
+"height": 400.0
+},
+{
+"name": "Troodon 2.0 - Klipper",
+"brand": "Vivedino",
+"width": 350.0,
+"depth": 350.0,
+"height": 330.0
+},
+{
+"name": "Troodon 2.0 - RRF",
+"brand": "Vivedino",
+"width": 350.0,
+"depth": 350.0,
+"height": 330.0
+},
+{
+"name": "Voron 0.1",
+"brand": "Voron",
+"width": 120.0,
+"depth": 120.0,
+"height": 120.0
+},
+{
+"name": "Voron 2.4 250",
+"brand": "Voron",
+"width": 250.0,
+"depth": 250.0,
+"height": 225.0
+},
+{
+"name": "Voron 2.4 300",
+"brand": "Voron",
+"width": 300.0,
+"depth": 300.0,
+"height": 275.0
+},
+{
+"name": "Voron 2.4 350",
+"brand": "Voron",
+"width": 350.0,
+"depth": 350.0,
+"height": 325.0
+},
+{
+"name": "Voron Trident 250",
+"brand": "Voron",
+"width": 250.0,
+"depth": 250.0,
+"height": 250.0
+},
+{
+"name": "Voron Trident 300",
+"brand": "Voron",
+"width": 300.0,
+"depth": 300.0,
+"height": 250.0
+},
+{
+"name": "Voron Trident 350",
+"brand": "Voron",
+"width": 350.0,
+"depth": 350.0,
+"height": 250.0
+},
+{
+"name": "Voxelab Aquila X2",
+"brand": "Voxelab",
+"width": 220.0,
+"depth": 220.0,
+"height": 250.0
+}
+]
+}

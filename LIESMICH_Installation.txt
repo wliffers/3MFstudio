@@ -1,0 +1,80 @@
+3MFStudio 1.1.2 – PythonPart für Allplan 2027
+Hersteller: Willi Liffers
+==============================================
+
+Was das Werkzeug macht
+- Schreibt Körper aus Allplan als 3MF-Datei für den 3D-Druck. Jeder Körper bekommt ein Filament
+  (bis 16), Name und Farbe kommen im Slicer an (Bambu Studio, OrcaSlicer, PrusaSlicer …).
+- Liest 3MF-Dateien und setzt ihre Körper per Mausklick in Allplan ab: saubere Körper ohne
+  Dreiecksnetz; Teile mit gleichbleibendem Querschnitt (Puzzleteile, Steckformen) mit glatten,
+  runden Flächen.
+- Farbe und Sorte je Filament aus einer Liste echter Filamente wählen (Hersteller → Sorte → Farbe,
+  Bambu Lab zuerst) oder eine eigene Farbe eintippen; die Körper in Allplan färben sich mit. ⇅ tauscht
+  die Körper zweier Filamente – praktisch bei ineinander steckenden Körpern.
+- Allplan-Elementgruppen bleiben zusammen: Körper einer Gruppe auf demselben Filament werden in der
+  Datei EIN Teil mit dem Namen der Gruppe – in Bambu Studio mit einem Klick umzufärben.
+- Druckplatte zeigen (Zahnrad im Fenster): Drucker aus einer Liste (93, Bambu Lab zuerst) oder eigene
+  Maße; die Platte liegt mit ihrer Oberseite auf Z = 0, Mitte auf X/Y = 0, der Bauraum auf Wunsch als
+  Linien. Sie kommt nie in die 3MF-Datei.
+- Ist Bambu Studio dein Slicer, wird die geschriebene Datei gleich das Bambu-Projekt: Farben, Sorten
+  (PLA, PETG …) und der Drucker, der in Bambu Studio eingestellt ist, sind drin – Doppelklick genügt.
+  Willst du eine neutrale 3MF für andere Programme, setze im Zahnrad den Haken „Universelle 3MF
+  schreiben“. Bambu Studio ist NICHT nötig; ohne Bambu entsteht immer die neutrale Datei.
+- „Im Slicer öffnen“ startet die zuletzt geschriebene Datei im Slicer.
+
+Voraussetzungen
+- Allplan 2027. Sonst muss nichts installiert werden.
+- Sprache: Steht Allplan auf Deutsch, spricht 3MFStudio Deutsch, sonst Englisch.
+
+Installation – Weg A (empfohlen): Plugin-Manager
+1. Allplan 2027 starten.
+2. Die Datei 3MFStudio-1.1.2.allep aus dieser ZIP mit der Maus in das Allplan-Fenster ziehen.
+3. Den Meldungen des Plugin-Managers folgen, danach Allplan einmal neu starten.
+4. Das Werkzeug steht danach
+   - in der Bibliothek unter Privat > Willi Liffers > 3MFStudio und
+   - in der Actionbar-Konfiguration unter den Plug-ins („3MFStudio - 3D-Druck“).
+Ein Update geht genauso (neuere .allep hineinziehen); deinstallieren über den Plugin-Manager.
+
+Installation – Weg B (ohne Plugin-Manager): von Hand kopieren
+1. Allplan beenden.
+2. Den Inhalt des Ordners „Manuell“ aus dieser ZIP in den Allplan-Benutzerordner …\Usr\Local\ kopieren
+   (meist Dokumente\Nemetschek\Allplan\2027\Usr\Local\). Danach gibt es dort:
+       PythonPartsScripts\willi_liffers\3MFStudio\   (Programm)
+       Library\Willi Liffers\3MFStudio.pyp          (Eintrag in der Bibliothek)
+3. Allplan starten; das Werkzeug liegt in der Bibliothek unter Privat > Willi Liffers.
+Bitte nur EINEN der beiden Wege benutzen.
+
+Benutzung in Kürze
+1. Werkzeug starten – ein kleines Fenster erscheint über Allplan.
+2. Bei einem Filament „Auswählen“ drücken und die Körper im Modell anklicken, „Fertig“ beendet.
+3. „3MF schreiben“ – Datei wählen. Danach „Im Slicer öffnen“.
+4. „3MF importieren“ – Datei wählen, die Körper hängen am Mauszeiger, Klick setzt sie ab.
+   Dauert etwas länger als 3 Sekunden, zeigt ein Ladefenster den Fortschritt.
+
+Hinweise
+- Die Slicer-Einstellung (Zahnrad im Fenster) liegt je Windows-Benutzer unter %APPDATA%\3MFStudio.
+- Für die Fehlersuche schreibt 3MFStudio ein Protokoll nach Dokumente\3MFStudio_debug.log.
+- In die 3MF-Datei kommen nur Geometrie, Filamentzuordnung und Teilnamen – keine Projektdaten.
+- Die Farbliste stammt aus der Open Filament Database (MIT-Lizenz, Text in
+  LICENSE_OpenFilamentDatabase.txt im Programmordner). Farben auf dem Bildschirm sind Näherungen.
+
+
+3MFStudio 1.1.2 – PythonPart for Allplan 2027 (English)
+=======================================================
+
+- Writes Allplan bodies as a 3MF file for 3D printing: each body gets a filament (up to 16); names and
+  colours arrive in the slicer. Reads 3MF files and places their bodies in Allplan with a mouse click –
+  clean bodies, smooth round faces for parts with a constant cross-section. Choose colour and type per
+  filament from a list of real filaments (Bambu Lab first) or type your own colour; Allplan recolours the
+  bodies. ⇅ swaps the bodies of two filaments. Colour list: Open Filament Database (MIT licence).
+  Build plate (gear in the window): pick a printer (93, Bambu Lab first) or a custom size; the plate's top
+  face is at Z = 0, centred at X/Y = 0, the build volume optionally as lines. Never written to the 3MF.
+  Bodies in an Allplan element group become ONE part named after the group. With Bambu Studio as the
+  slicer, the written file is the Bambu project itself (colours, materials and the printer set in Bambu
+  Studio) – tick "Write a universal 3MF" in the gear for a neutral file.
+- Needs only Allplan 2027. Bambu Studio is optional. 3MFStudio speaks German when Allplan is set to German,
+  English otherwise.
+- Install: drag 3MFStudio-1.1.2.allep into the Allplan window and follow the Plugin Manager, then restart
+  Allplan. The tool is in the library under Private > Willi Liffers > 3MFStudio.
+- Without the Plugin Manager: close Allplan and copy the contents of the "Manuell" folder into your Allplan
+  user folder …\Usr\Local\.
