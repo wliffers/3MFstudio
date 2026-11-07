@@ -38,7 +38,7 @@ eine Haftung, die sich nach zwingendem Recht nicht ausschließen lässt (etwa be
 ## Daten
 
 3MFStudio verbindet sich nicht mit dem Internet und sendet keine Daten. Es schreibt Einstellungen nach
-`%APPDATA%\3MFStudio\` und ein Protokoll nach `Dokumente\3MFStudio_debug.log`. In eine 3MF-Datei kommen
+`C:\Users\<USER>\AppData\Roaming\3MFStudio\` und ein Protokoll nach `C:\Users\<USER>\Documents\3MFStudio_debug.log`. In eine 3MF-Datei kommen
 Geometrie, Filamentzuordnung und Teilnamen – bei einem Bambu-Projekt zusätzlich Farben, Sorten und
 Druckerprofil –, aber keine Projektdaten, Attribute oder Pfade aus Allplan. Wer eine Datei weitergibt,
 gibt deren Inhalt weiter.
@@ -92,8 +92,8 @@ under mandatory law (for example for intent) remains unaffected.
 
 ## Data
 
-3MFStudio does not connect to the internet and sends no data. It writes settings to `%APPDATA%\3MFStudio\`
-and a log to `Documents\3MFStudio_debug.log`. A 3MF file contains geometry, filament assignment and part
+3MFStudio does not connect to the internet and sends no data. It writes settings to `C:\Users\<USER>\AppData\Roaming\3MFStudio\`
+and a log to `C:\Users\<USER>\Documents\3MFStudio_debug.log`. A 3MF file contains geometry, filament assignment and part
 names – for a Bambu project also colours, materials and the printer profile – but no project data,
 attributes or paths from Allplan. Whoever passes a file on passes its content on.
 

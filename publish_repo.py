@@ -38,7 +38,7 @@ SKIP_SUFFIXES = (".pyc", ".pyo", ".log")
 
 TEXT_SUFFIXES = (".py", ".pyp", ".txt", ".md", ".json", ".yml", ".yaml", ".cfg", ".toml", ".xml")
 FORBIDDEN = [
-    (re.compile(r"C:\\\\?Users\\\\?", re.IGNORECASE), "Benutzerpfad"),
+    (re.compile(r"C:\\\\?Users\\\\?(?!<USER>)", re.IGNORECASE), "Benutzerpfad"),   # <USER> ist der Platzhalter der Doku
     (re.compile(r"C:\\\\?sandbox", re.IGNORECASE), "Arbeitsordner"),
     (re.compile(re.escape(os.environ.get("USERNAME", "") or "<kein Benutzer>"), re.IGNORECASE), "Benutzername"),
     (re.compile(r"api[_-]?key|secret|password|passwort|\bBearer\b", re.IGNORECASE), "Geheimnis?"),

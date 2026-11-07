@@ -19,7 +19,7 @@ Version, falls beteiligt – oder „ohne Bambu Studio“. Anderer Slicer: welch
 **Was ist passiert, was hattest du erwartet?**
 
 **Protokoll**
-Die letzten Zeilen aus `Dokumente\3MFStudio_debug.log` (bitte vorher auf Pfade oder Namen prüfen, die du
+Die letzten Zeilen aus `C:\Users\<USER>\Documents\3MFStudio_debug.log` (bitte vorher auf Pfade oder Namen prüfen, die du
 nicht veröffentlichen willst):
 
 ```

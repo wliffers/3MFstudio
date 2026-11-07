@@ -70,7 +70,7 @@ Actionbar-Konfiguration unter den Plug-ins. Ein Update geht genauso; deinstallie
 
 1. Allplan beenden.
 2. Aus `3MFStudio_Installation.zip` den Inhalt des Ordners `Manuell` in den Allplan-Benutzerordner
-   `…\Usr\Local\` kopieren (meist `Dokumente\Nemetschek\Allplan\2027\Usr\Local\`).
+   `…\Usr\Local\` kopieren (meist `C:\Users\<USER>\Documents\Nemetschek\Allplan\2027\Usr\Local\`).
 3. Allplan starten. Das Werkzeug liegt in der Bibliothek unter Privat › Willi Liffers.
 
 Bitte nur **einen** der beiden Wege benutzen. Ausführlich: [LIESMICH_Installation.txt](LIESMICH_Installation.txt).
@@ -107,8 +107,8 @@ Filamentnummern; Sorten und Farben stellst du dort selbst ein.
 
 - **In die 3MF-Datei:** Geometrie, Filamentzuordnung, Teilnamen. Bei einem Bambu-Projekt zusätzlich
   Farben, Sorten und Druckerprofil. **Keine** Projektdaten, Attribute oder Pfade aus Allplan.
-- **Auf deinem Rechner:** Einstellungen unter `%APPDATA%\3MFStudio\einstellungen.json`, ein Protokoll
-  unter `Dokumente\3MFStudio_debug.log` (für die Fehlersuche). Bambu Studios Einstellungsdatei und
+- **Auf deinem Rechner:** Einstellungen unter `C:\Users\<USER>\AppData\Roaming\3MFStudio\einstellungen.json`, ein Protokoll
+  unter `C:\Users\<USER>\Documents\3MFStudio_debug.log` (für die Fehlersuche). Bambu Studios Einstellungsdatei und
   Profile werden nur **gelesen**, nie verändert.
 - **Ins Internet:** nichts. 3MFStudio lädt nichts nach und sendet nichts.
 
@@ -121,7 +121,7 @@ Filamentnummern; Sorten und Farben stellst du dort selbst ein.
 - **Bauraum.** 3MFStudio warnt nicht, wenn ein Modell größer als die Druckplatte ist – das sieht man
   im Slicer. Die Druckplatte im Modell hilft beim Einschätzen.
 - **Farben am Bildschirm** sind Näherungen; Allplan hat 255 feste Farben, 3MFStudio nimmt die nächste.
-- Schlägt etwas fehl, steht der Grund im Protokoll `Dokumente\3MFStudio_debug.log`.
+- Schlägt etwas fehl, steht der Grund im Protokoll `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 
 ## Für Entwickler
 
@@ -149,7 +149,7 @@ Wie ein Release entsteht: [docs/RELEASING.md](docs/RELEASING.md).
 ## Mitmachen
 
 Fehlermeldungen und Ideen gern als Issue – mit Allplan-Version, Bambu-Studio-Version (falls beteiligt)
-und den letzten Zeilen aus `Dokumente\3MFStudio_debug.log`. Mehr in [CONTRIBUTING.md](CONTRIBUTING.md).
+und den letzten Zeilen aus `C:\Users\<USER>\Documents\3MFStudio_debug.log`. Mehr in [CONTRIBUTING.md](CONTRIBUTING.md).
 Es gibt keinen Anspruch auf Antwort oder Behebung; das ist ein Freizeitprojekt.
 
 ## Haftung und Lizenz

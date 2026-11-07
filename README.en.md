@@ -68,8 +68,8 @@ printer currently set in your Bambu Studio. Tick **"Write a universal 3MF"** in 
 
 - **Into the 3MF file:** geometry, filament assignment, part names; for a Bambu project also colours,
   materials and the printer profile. **No** project data, attributes or paths from Allplan.
-- **On your machine:** settings in `%APPDATA%\3MFStudio\einstellungen.json`, a log in
-  `Documents\3MFStudio_debug.log`. Bambu Studio's settings and profiles are only **read**.
+- **On your machine:** settings in `C:\Users\<USER>\AppData\Roaming\3MFStudio\einstellungen.json`, a log in
+  `C:\Users\<USER>\Documents\3MFStudio_debug.log`. Bambu Studio's settings and profiles are only **read**.
 - **To the internet:** nothing.
 
 ## Limits

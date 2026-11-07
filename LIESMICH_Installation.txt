@@ -38,7 +38,7 @@ Ein Update geht genauso (neuere .allep hineinziehen); deinstallieren über den P
 Installation – Weg B (ohne Plugin-Manager): von Hand kopieren
 1. Allplan beenden.
 2. Den Inhalt des Ordners „Manuell“ aus dieser ZIP in den Allplan-Benutzerordner …\Usr\Local\ kopieren
-   (meist Dokumente\Nemetschek\Allplan\2027\Usr\Local\). Danach gibt es dort:
+   (meist C:\Users\<USER>\Documents\Nemetschek\Allplan\2027\Usr\Local\). Danach gibt es dort:
        PythonPartsScripts\willi_liffers\3MFStudio\   (Programm)
        Library\Willi Liffers\3MFStudio.pyp          (Eintrag in der Bibliothek)
 3. Allplan starten; das Werkzeug liegt in der Bibliothek unter Privat > Willi Liffers.
@@ -52,8 +52,8 @@ Benutzung in Kürze
    Dauert etwas länger als 3 Sekunden, zeigt ein Ladefenster den Fortschritt.
 
 Hinweise
-- Die Slicer-Einstellung (Zahnrad im Fenster) liegt je Windows-Benutzer unter %APPDATA%\3MFStudio.
-- Für die Fehlersuche schreibt 3MFStudio ein Protokoll nach Dokumente\3MFStudio_debug.log.
+- Die Slicer-Einstellung (Zahnrad im Fenster) liegt je Windows-Benutzer unter C:\Users\<USER>\AppData\Roaming\3MFStudio.
+- Für die Fehlersuche schreibt 3MFStudio ein Protokoll nach C:\Users\<USER>\Documents\3MFStudio_debug.log.
 - In die 3MF-Datei kommen nur Geometrie, Filamentzuordnung und Teilnamen – keine Projektdaten.
 - Die Farbliste stammt aus der Open Filament Database (MIT-Lizenz, Text in
   LICENSE_OpenFilamentDatabase.txt im Programmordner). Farben auf dem Bildschirm sind Näherungen.

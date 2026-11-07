@@ -10,7 +10,7 @@ Bitte als Issue mit:
 1. **Allplan-Version** (z. B. 2027.0.1) und Sprache.
 2. **Bambu-Studio-Version**, falls Bambu Studio beteiligt war – oder „ohne Bambu Studio“.
 3. **Was du getan hast** (Schritte) und **was stattdessen passiert ist**.
-4. Die letzten Zeilen aus `Dokumente\3MFStudio_debug.log` (bitte vorher auf Pfade oder Namen schauen,
+4. Die letzten Zeilen aus `C:\Users\<USER>\Documents\3MFStudio_debug.log` (bitte vorher auf Pfade oder Namen schauen,
    die du nicht veröffentlichen willst).
 5. Wenn möglich: die 3MF-Datei oder ein kleines Allplan-Beispiel, mit dem es sich nachstellen lässt.
 
