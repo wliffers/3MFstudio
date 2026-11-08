@@ -31,7 +31,7 @@
 ---
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="The 3MFStudio window in Allplan: colour selection for filament 1 with brand, type and colour swatches, below it the filament cards and the buttons Write 3MF, Import 3MF and Open in slicer (German interface)" width="720">
+  <img src="docs/images/3mfstudio-ablauf.gif" alt="The workflow in 10 seconds: in Allplan the bodies of a letter A with the text MAX are assigned to two filaments in 3MFStudio, the 3MF file is written, Bambu Studio shows the two filaments, and the printer prints the blue A with the text MAX (German interface)" width="800">
 </p>
 <p align="center"><sub>Shown with the German interface. The interface follows Allplan's language setting.</sub></p>
 

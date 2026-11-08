@@ -31,7 +31,7 @@
 ---
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="Das 3MFStudio-Fenster in Allplan: Farbauswahl für Filament 1 mit Hersteller, Sorte und Farbfeldern, darunter die Filamentkarten und die Schaltflächen 3MF schreiben, 3MF importieren und Im Slicer öffnen" width="720">
+  <img src="docs/images/3mfstudio-ablauf.gif" alt="Ablauf in 10 Sekunden: In Allplan werden die Körper eines A mit der Aufschrift MAX in 3MFStudio zwei Filamenten zugeordnet, die 3MF-Datei wird geschrieben, Bambu Studio zeigt die zwei Filamente, und der Drucker druckt das blaue A mit der Aufschrift MAX" width="800">
 </p>
 
 Mit 3MFStudio exportierst du 3D-Körper aus Allplan 2027 als 3MF-Dateien und importierst vorhandene
