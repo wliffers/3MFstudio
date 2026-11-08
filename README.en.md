@@ -21,6 +21,11 @@
 
 ---
 
+<p align="center">
+  <img src="docs/images/hero.png" alt="The 3MFStudio window above Allplan: colour picker for filament 1 with brand, material and colour tiles, below it the filament cards and the buttons Write 3MF, Import 3MF and Open in slicer (German UI)" width="720">
+</p>
+<p align="center"><sub>The whole tool in one window: choose colour and material per filament, assign bodies, write, open in the slicer. (Shown in German; the UI follows Allplan's language.)</sub></p>
+
 3MFStudio writes 3D bodies from Allplan as a **3MF file** for 3D printing – each body gets a filament,
 names and colours arrive in the slicer. The other way round it reads 3MF files and places their bodies as
 clean Allplan bodies. Everything is operated in a small window above Allplan.

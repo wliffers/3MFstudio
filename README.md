@@ -29,6 +29,11 @@
 
 ---
 
+<p align="center">
+  <img src="docs/images/hero.png" alt="Das 3MFStudio-Fenster über Allplan: Farbauswahl für Filament 1 mit Hersteller, Sorte und Farbkacheln, darunter die Filamentkarten und die Knöpfe 3MF schreiben, 3MF importieren und Im Slicer öffnen" width="720">
+</p>
+<p align="center"><sub>Das ganze Werkzeug in einem Fenster: Farbe und Sorte je Filament wählen, Körper zuordnen, schreiben, im Slicer öffnen.</sub></p>
+
 3MFStudio schreibt 3D-Körper aus Allplan als **3MF-Datei** für den 3D-Druck – jeder Körper bekommt ein
 Filament, Name und Farbe kommen im Slicer an. Umgekehrt liest es 3MF-Dateien und setzt ihre Körper als
 saubere Allplan-Körper ab. Bedient wird alles in einem kleinen Fenster über Allplan; es gibt keine
@@ -49,8 +54,6 @@ Palette zum Durchklicken.
 | 📐 **Druckplatte im Modell** | Drucker aus einer Liste (93) oder eigene Maße: Platte mit Oberseite auf Z = 0, Mitte auf X/Y = 0, Bauraum auf Wunsch als Linien. Kommt nie in die Datei. |
 | ⬅️ **3MF → Allplan** | 3MF-Dateien importieren: Körper ohne Dreiecksnetz, Filamentfarben und -zuordnung kommen mit; Teile mit gleichbleibendem Querschnitt bekommen glatte, runde Flächen. |
 | 🌍 **Deutsch / Englisch** | Steht Allplan auf Deutsch, spricht 3MFStudio Deutsch, sonst Englisch. |
-
-<!-- Screenshot: docs/images/fenster.png (Fenster über Allplan mit zwei Filamentkarten) -->
 
 ## Schnellstart
 
