@@ -84,7 +84,7 @@ threemf_window = importlib.reload(threemf_window)
 threemf_slicer = importlib.reload(threemf_slicer)
 threemf_bambu = importlib.reload(threemf_bambu)
 
-SCRIPT_BUILD = "3MFStudio 0.9.3 (2026-11-07)"
+SCRIPT_BUILD = "3MFStudio 0.9.6 (2026-11-08)"
 
 FILE_FILTER = "3MF-Datei (*.3mf)|*.3mf|"
 FILE_EXTENSION = "3mf"
@@ -323,6 +323,8 @@ class Studio3MF(BaseScriptObject):
             self._swap(int(values[0]), int(values[1]))
         elif name == "plate":
             self._place_plate(str(values[0]), bool(values[1]), values[2:5])
+        elif name == "volume_save":
+            self._save_volume(str(values[0]), bool(values[1]), values[2:5])
         else:
             LOG.warning("Unbekannter Fensterklick %s", name)
 
@@ -429,19 +431,23 @@ class Studio3MF(BaseScriptObject):
         kinds = [threemf_allplan.type_name(element) for element in elements]
         # Liefert die Auswahl eine Wand UND ihre Schichten, zaehlen nur die Schichten - sonst stuende sie doppelt.
         layers_picked = any(kind in threemf_allplan.BODY_CHILDREN.values() for kind in kinds)
-        bodies, skipped = [], 0
+        help_layer = self._help_layer()
+        bodies, skipped, helping = [], 0, 0
         with self._busy(tr("Körper werden gelesen")) as busy:
             for index, (element, kind) in enumerate(zip(elements, kinds)):
                 busy.step(tr("Körper {done} von {total} wird gelesen …", done=index + 1, total=len(elements)))
                 if layers_picked and kind in threemf_allplan.BODY_CHILDREN:
+                    continue
+                if threemf_allplan.on_layer(element, help_layer):
+                    helping += 1                # Hilfskonstruktion (Druckplatte & Co.) kommt nie in die Datei
                     continue
                 body = self._body_of(element)
                 if body is None:
                     skipped += 1
                 else:
                     bodies.append(body)
-        LOG.info("Auswahl: %s Bauteile (%s), %s Koerper, %s uebergangen", len(elements), sorted(set(kinds)),
-                 len(bodies), skipped)
+        LOG.info("Auswahl: %s Bauteile (%s), %s Koerper, %s uebergangen, %s auf %s", len(elements), sorted(set(kinds)),
+                 len(bodies), skipped, helping, threemf_allplan.HELP_LAYER)
         return bodies, skipped
 
     def _body_of(self, element):
@@ -594,22 +600,73 @@ class Studio3MF(BaseScriptObject):
                 state.printers = []
         return state.printers
 
-    def _place_plate(self, name: str, with_volume: bool, sizes: tuple) -> None:
-        """Druckplatte (1 mm, Oberseite Z = 0, Mitte X/Y = 0) und auf Wunsch den Bauraum als Linien ablegen."""
+    def _save_volume(self, name: str, with_volume: bool, sizes: tuple):
+        """Bauraum-Karte: Drucker, Linien und eigene Masse sofort in die Einstellungen; liefert den Drucker."""
         printer = threemf_printers.find(self._printers(), name) if name else None
         if printer is None:
             printer = threemf_printers.custom(*sizes)        # meldet unbrauchbare Masse
             self.settings["eigene_masse"] = [printer.width, printer.depth, printer.height]
         self.settings["drucker"], self.settings["bauraum"] = (name if printer.name else ""), with_volume
         threemf_slicer.save(self.settings)
+        return printer
+
+    def _volume_note(self) -> str:
+        """Die Zeile der Bauraum-Karte: was gerade gespeichert ist."""
+        name = self.settings["drucker"]
+        printer = threemf_printers.find(self._printers(), name) if name else None
+        sizes = (printer.width, printer.depth, printer.height) if printer else self.settings["eigene_masse"]
+        return tr("Gespeichert: {printer} · {size} mm", printer=name if printer else tr("Eigene Maße"),
+                  size=" × ".join("%g" % float(value) for value in sizes))
+
+    def _place_plate(self, name: str, with_volume: bool, sizes: tuple) -> None:
+        """Druckplatte (1 mm, Oberseite Z = 0, Mitte X/Y = 0) und auf Wunsch den Bauraum als Linien ablegen."""
+        printer = self._save_volume(name, with_volume, sizes)
         palette = self._palette()
         lines = threemf_printers.volume_lines(printer) if with_volume else []
+        layer = self._help_layer()
         elements = threemf_allplan.plate_elements(threemf_printers.plate_box(printer), lines,
                                                   threemf_model.nearest_colour(PLATE_RGB, palette),
-                                                  threemf_model.nearest_colour(VOLUME_RGB, palette))
+                                                  threemf_model.nearest_colour(VOLUME_RGB, palette), layer)
         created = list(AllplanBaseEle.CreateElements(self.document, AllplanGeo.Matrix3D(), elements, [], None))
-        LOG.info("Druckplatte %s (%g x %g x %g mm, Bauraum %s): %s Bauteile", printer.name or "eigene Masse",
-                 printer.width, printer.depth, printer.height, with_volume, len(created))
+        LOG.info("Druckplatte %s (%g x %g x %g mm, Bauraum %s, Layer-ID %s): %s Bauteile", printer.name or "eigene Masse",
+                 printer.width, printer.depth, printer.height, with_volume, layer, len(created))
+        if not layer:
+            self._tell(tr("Den Layer „{layer}“ gibt es in diesem Projekt nicht. Die Druckplatte liegt deshalb auf dem "
+                          "eingestellten Layer – beim Auswählen bitte nicht mit anklicken.",
+                          layer=threemf_allplan.HELP_LAYER))
+
+    def _help_layer(self) -> int:
+        """ID des Hilfslayers KO_HK in diesem Projekt; 0, wenn es ihn nicht gibt."""
+        try:
+            return threemf_allplan.layer_id(threemf_allplan.HELP_LAYER, self.document)
+        except Exception:
+            LOG.exception("Layer %s nicht aufloesbar", threemf_allplan.HELP_LAYER)
+            return 0
+
+    def _release_help_layer(self) -> None:
+        """Vor dem Schreiben: zugeordnete Koerper, die inzwischen auf dem Hilfslayer liegen, kommen nicht in die Datei."""
+        layer = self._help_layer()
+        if not layer:
+            return
+        keys = []
+        for key, adapter in list(self.adapters.items()):
+            try:
+                if threemf_allplan.on_layer(adapter, layer):
+                    keys.append(key)
+            except Exception:
+                LOG.exception("Layer von %s nicht lesbar - Koerper bleibt zugeordnet", key)
+        released = self.session.release(keys)
+        for key in keys:
+            self.adapters.pop(key, None)
+        if released:
+            LOG.info("%s Koerper auf %s aus der Zuordnung genommen", released, threemf_allplan.HELP_LAYER)
+            if released == 1:
+                text = tr("Ein Körper liegt auf dem Layer „{layer}“ (Hilfskonstruktion) und kommt nicht in die Datei.",
+                          layer=threemf_allplan.HELP_LAYER)
+            else:
+                text = tr("{number} Körper liegen auf dem Layer „{layer}“ (Hilfskonstruktion) und kommen nicht in "
+                          "die Datei.", number=released, layer=threemf_allplan.HELP_LAYER)
+            self._tell(text)
 
     # ------------------------------------------------------------------ Datei
 
@@ -617,6 +674,7 @@ class Studio3MF(BaseScriptObject):
         if self._armed:
             self._stop_input()
             self._highlight(0)
+        self._release_help_layer()
         parts = self.session.parts()                # meldet "nichts zugeordnet" und einen unsinnigen Massstab
         chosen = ask_save_file("")
         if not chosen:
@@ -802,6 +860,8 @@ class Studio3MF(BaseScriptObject):
         view["slicer_label"] = threemf_slicer.program_label(self.settings["slicer"])
         view["slicer_tip"] = threemf_slicer.open_tip(self.session.last_file, self.settings["slicer"])
         view["printers"] = [printer.name for printer in self._printers()]
+        view["printer_sizes"] = [[printer.width, printer.depth, printer.height] for printer in self._printers()]
+        view["volume_note"] = self._volume_note()
         view["printer"] = self.settings["drucker"]
         view["volume"] = self.settings["bauraum"]
         view["custom_size"] = self.settings["eigene_masse"]

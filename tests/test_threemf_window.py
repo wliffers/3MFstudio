@@ -165,3 +165,30 @@ def test_the_view_of_a_session_feeds_the_window_rules():
     assert view["last_file"] == ""
     session.last_file = r"C:\Druck\modell.3mf"
     assert session.view()["last_file"] == r"C:\Druck\modell.3mf"
+
+
+def _named(name):
+    return next(element for element in xaml_root().iter() if element.get(X + "Name") == name)
+
+
+def test_build_volume_button_sits_left_of_the_gear():
+    """Wunsch 2026-11-08: Wuerfel-Symbol links neben dem Zahnrad - rechts angedockt heisst: direkt danach."""
+    order = [element.get(X + "Name") for element in _named("Header")]
+    assert order.index("Volume") == order.index("Settings") + 1
+    assert window._VOLUME in window.build_xaml()
+
+
+def test_build_volume_card_looks_like_the_colour_selection_and_holds_the_plate():
+    volume, colour = _named("VolumePanel"), _named("ColourPanel")
+    for key in ("Margin", "Padding", "CornerRadius", "Background", "BorderBrush", "BorderThickness", "Visibility"):
+        assert volume.get(key) == colour.get(key), key
+    inside = {element.get(X + "Name") for element in volume.iter()}
+    assert {"PlatePrinter", "PlatePlace", "PlateVolume", "VolumeStatus", "VolumeClose", *window.SIZE_BOXES} <= inside
+    assert not {"PlatePrinter", "PlatePlace", "PlateWidth"} & {e.get(X + "Name") for e in _named("SettingsPanel").iter()}
+
+
+def test_size_fields_are_always_visible():
+    """X/Y/Z stehen immer da (frueher nur bei "Eigene Maße")."""
+    assert "PlateCustom" not in xaml_names()
+    for name in window.SIZE_BOXES:
+        assert _named(name).get("Visibility") in (None, "Visible")

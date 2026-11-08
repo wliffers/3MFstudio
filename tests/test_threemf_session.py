@@ -226,3 +226,13 @@ def test_session_to_file_and_back(tmp_path):
     back = read_3mf(target)
     assert [(p.name, p.filament) for p in back] == [("Grundkörper", 1), ("Text", 2)]
     assert model.size(back) == pytest.approx((40.0, 20.0, 10.0))
+
+
+def test_bodies_moved_to_the_help_layer_leave_the_assignment():
+    """Hilfslayer KO_HK (2026-11-08): herausgenommene Koerper fehlen in der Datei, unbekannte Kennungen zaehlen nicht."""
+    session = Session()
+    session.assign(1, [body("a", box(0, 0, 0, 10, 10, 10)), body("b", box(20, 0, 0, 10, 10, 10))])
+    session.assign(2, [body("c", box(40, 0, 0, 10, 10, 10))])
+    assert session.release(["b", "c", "gibt-es-nicht"]) == 2
+    assert [part.filament for part in session.parts()] == [1]
+    assert session.release(["b"]) == 0

@@ -9,23 +9,45 @@ Abnahme: die 13 Beispiele in input/examples (tests/test_examples.py).
 Bambu Studio legt die Netze eines Objekts in eine eigene Datei (3D/Objects/object_N.model) und
 verweist ueber `p:path` darauf - gemessen an Bambus zurueckgeschriebener Datei, Version 02.09.01.70.
 
+Dateien nach Standard ohne Bambu-Angaben: Farben aus `basematerials` (Kern) und `colorgroup` (Materials-
+Erweiterung); jede neue Farbe wird ein eigenes Filament. Geprueft gegen die Konformitaetstests des 3MF-
+Konsortiums (tests/test_conformance.py): was eine Pflicht-Erweiterung verlangt, die hier fehlt, wird abgelehnt,
+statt einen unvollstaendigen Koerper abzulegen.
+
 Reine Standardbibliothek, kein Allplan.
 """
 
 from __future__ import annotations
 
+import io
 import json
+import math
+import re
 import xml.etree.ElementTree as ET
 import zipfile
+from collections import Counter
 from dataclasses import dataclass
 
 from threemf_text import tr  # pyright: ignore[reportMissingImports]
-from threemf_model import Part, ThreeMfError, Triangle, Vec3  # pyright: ignore[reportMissingImports]
+from threemf_model import MAX_FILAMENTS, Part, ThreeMfError, Triangle, Vec3  # pyright: ignore[reportMissingImports]
 
 CORE = "{http://schemas.microsoft.com/3dmanufacturing/core/2015/02}"
+MATERIAL = "{http://schemas.microsoft.com/3dmanufacturing/material/2015/02}"
 PRODUCTION_PATH = "{http://schemas.microsoft.com/3dmanufacturing/production/2015/06}path"
 RELATIONSHIP = "{http://schemas.openxmlformats.org/package/2006/relationships}Relationship"
 MODEL_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+KEYSTORE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/3dmanufacturing/2019/04/keystore"   # Secure Content
+# Erweiterungen, die eine Datei verlangen darf: was sie bedeuten, liest dieses Modul oder es aendert die Form nicht.
+SUPPORTED_EXTENSIONS = frozenset({
+    "http://schemas.microsoft.com/3dmanufacturing/production/2015/06",      # p:path - Bambu verlangt sie immer
+    "http://schemas.microsoft.com/3dmanufacturing/material/2015/02",        # Farbgruppen
+    "http://schemas.microsoft.com/3dmanufacturing/trianglesets/2021/07",    # benannte Dreiecksgruppen, Form gleich
+    "http://schemas.bambulab.com/package/2021",
+})
+EXTENSION_NAMES = (("beamlattice", "Beam Lattice"), ("slice", "Slice"), ("securecontent", "Secure Content"),
+                   ("volumetric", "Volumetric"), ("booleanoperations", "Boolean Operations"),
+                   ("displacement", "Displacement"), ("alternatives", "Production Alternatives"))
+FIRST_ELEMENT = re.compile(rb"<[A-Za-z_]")      # erstes Element; davor steht der Prolog mit einer moeglichen DTD
 DEFAULT_MODEL_FILE = "3D/3dmodel.model"
 RELATIONSHIPS_FILE = "_rels/.rels"
 MODEL_CONFIG_FILE = "Metadata/model_settings.config"
@@ -45,7 +67,8 @@ class _Object:
     vertices: list[Vec3]
     triangles: list[Triangle]
     components: list[tuple[str, int, Matrix]]              # Modelldatei, Objekt-Id, Lage
-    painted: bool = False                                  # Bambus Flaechenbemalung (paint_color je Dreieck)
+    painted: bool = False                                  # Farbe je Dreieck (Bambus paint_color oder Standardfarben)
+    colour: str = ""                                       # Standardfarbe "#RRGGBB"; bei mehreren die haeufigste
 
 
 @dataclass
@@ -56,10 +79,28 @@ class _Model:
     application: str = ""
 
 
+def _float(text: str) -> float:
+    """Zahl nach 3MF (Punkt als Dezimalzeichen, endlich); alles andere ist eine kaputte Datei, kein Absturz."""
+    try:
+        value = float(text)
+    except ValueError:
+        value = math.nan
+    if not math.isfinite(value):
+        raise ThreeMfError(tr("„{text}“ ist in der Datei keine gültige Zahl.", text=text))
+    return value
+
+
+def _int(text: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        raise ThreeMfError(tr("„{text}“ ist in der Datei keine gültige Zahl.", text=text)) from None
+
+
 def _matrix(text: str | None) -> Matrix:
     if not text:
         return IDENTITY
-    values = tuple(float(value) for value in text.split())
+    values = tuple(_float(value) for value in text.split())
     if len(values) != 12:
         raise ThreeMfError(tr("Eine Lageangabe hat {count} statt 12 Zahlen.", count=len(values)))
     return values
@@ -92,44 +133,136 @@ def _normalised(path: str) -> str:
     return path.lstrip("/")
 
 
-def _parse(archive: zipfile.ZipFile, name: str) -> ET.Element:
+def _read(archive: zipfile.ZipFile, name: str) -> bytes:
+    """Rohinhalt eines Teils; eine DTD wird abgewiesen (3MF verbietet sie, Entitaeten koennen Speicher fluten)."""
     try:
-        return ET.fromstring(archive.read(name))
+        data = archive.read(name)
     except KeyError as exc:
         raise ThreeMfError(tr("In der Datei fehlt der Teil „{name}“.", name=name)) from exc
+    first = FIRST_ELEMENT.search(data)
+    if b"<!DOCTYPE" in data[:first.start() if first else len(data)]:
+        raise ThreeMfError(tr("Der Teil „{name}“ enthält eine DTD-Angabe. 3MF erlaubt das nicht – die Datei wird "
+                              "aus Sicherheitsgründen nicht gelesen.", name=name))
+    return data
+
+
+def _parse(archive: zipfile.ZipFile, name: str, data: bytes | None = None) -> ET.Element:
+    try:
+        return ET.fromstring(_read(archive, name) if data is None else data)
     except ET.ParseError as exc:
         raise ThreeMfError(tr("Der Teil „{name}“ ist beschädigt: {error}", name=name, error=exc)) from exc
 
 
-def _root_model_path(archive: zipfile.ZipFile) -> str:
-    if RELATIONSHIPS_FILE in archive.namelist():
-        for relationship in _parse(archive, RELATIONSHIPS_FILE).iter(RELATIONSHIP):
-            if relationship.get("Type") == MODEL_RELATIONSHIP_TYPE and relationship.get("Target"):
-                return _normalised(relationship.get("Target", ""))
-    return DEFAULT_MODEL_FILE
+def _root_namespaces(data: bytes) -> dict[str, str]:
+    """Praefix -> Namensraum, wie das Wurzelelement sie erklaert (ElementTree vergisst die Praefixe)."""
+    found: dict[str, str] = {}
+    for event, item in ET.iterparse(io.BytesIO(data), events=("start-ns", "start")):
+        if event == "start":
+            break
+        prefix, uri = item
+        found[prefix] = uri
+    return found
+
+
+def _extension_name(uri: str) -> str:
+    lowered = uri.lower()
+    return next((name for key, name in EXTENSION_NAMES if key in lowered), uri)
+
+
+def _check_required(root: ET.Element, data: bytes) -> None:
+    """3MF Core 2.3.1: eine verlangte, aber unbekannte Erweiterung heisst ablehnen - sonst fehlt still ein Teil."""
+    wanted = root.get("requiredextensions", "").split()
+    if not wanted:
+        return
+    namespaces = _root_namespaces(data)
+    missing = [_extension_name(namespaces[prefix]) if prefix in namespaces else prefix
+               for prefix in wanted if namespaces.get(prefix) not in SUPPORTED_EXTENSIONS]
+    if missing:
+        raise ThreeMfError(tr("Die Datei verlangt die 3MF-Erweiterung „{names}“, die 3MFStudio nicht kennt. Ohne sie "
+                              "wäre der Körper unvollständig – die Datei wird deshalb nicht gelesen.",
+                              names=", ".join(missing)))
+
+
+def _relationship_targets(archive: zipfile.ZipFile) -> dict[str, str]:
+    """Beziehungstyp -> Ziel aus _rels/.rels (der erste je Typ)."""
+    if RELATIONSHIPS_FILE not in archive.namelist():
+        return {}
+    found: dict[str, str] = {}
+    for relationship in _parse(archive, RELATIONSHIPS_FILE).iter(RELATIONSHIP):
+        if relationship.get("Type") and relationship.get("Target"):
+            found.setdefault(relationship.get("Type", ""), _normalised(relationship.get("Target", "")))
+    return found
+
+
+def _palettes(resources: ET.Element | None) -> dict[int, list[str]]:
+    """Farbliste je Ressource: basematerials (Kern, displaycolor) und colorgroup (Materials-Erweiterung)."""
+    palettes: dict[int, list[str]] = {}
+    if resources is None:
+        return palettes
+    for group in resources.iterfind(f"{CORE}basematerials"):
+        palettes[_int(group.get("id", "0"))] = [_hex_colour(base.get("displaycolor", ""))
+                                                for base in group.iterfind(f"{CORE}base")]
+    for group in resources.iterfind(f"{MATERIAL}colorgroup"):
+        palettes[_int(group.get("id", "0"))] = [_hex_colour(colour.get("color", ""))
+                                                for colour in group.iterfind(f"{MATERIAL}color")]
+    return palettes
+
+
+def _colour(palettes: dict[int, list[str]], group: str | None, index: str | None) -> str:
+    entries = palettes.get(_int(group), []) if group else []
+    position = _int(index) if index else 0
+    return entries[position] if 0 <= position < len(entries) else ""
+
+
+def _check_unique_ids(resources: ET.Element | None) -> None:
+    seen: set[int] = set()
+    for element in resources if resources is not None else ():
+        if element.get("id") is None:
+            continue
+        number = _int(element.get("id", ""))
+        if number in seen:
+            raise ThreeMfError(tr("Die Datei vergibt die Nummer {id} doppelt.", id=number))
+        seen.add(number)
 
 
 def _load_model(archive: zipfile.ZipFile, path: str) -> _Model:
-    root = _parse(archive, path)
+    data = _read(archive, path)
+    root = _parse(archive, path, data)
+    _check_required(root, data)
     unit = root.get("unit", "millimeter")
     if unit not in UNIT_TO_MM:
         raise ThreeMfError(tr("Unbekannte Längeneinheit „{unit}“.", unit=unit))
+    resources = root.find(f"{CORE}resources")
+    _check_unique_ids(resources)
+    palettes = _palettes(resources)
     objects: dict[int, _Object] = {}
     for element in root.iterfind(f"{CORE}resources/{CORE}object"):
         entry = _Object(element.get("name", ""), [], [], [])
         mesh = element.find(f"{CORE}mesh")
         if mesh is not None:
-            entry.vertices = [(float(v.get("x", "0")), float(v.get("y", "0")), float(v.get("z", "0")))
+            entry.vertices = [(_float(v.get("x", "0")), _float(v.get("y", "0")), _float(v.get("z", "0")))
                               for v in mesh.iterfind(f"{CORE}vertices/{CORE}vertex")]
+            object_group, object_index = element.get("pid"), element.get("pindex")
+            colours: Counter = Counter()
             for triangle in mesh.iterfind(f"{CORE}triangles/{CORE}triangle"):
-                entry.triangles.append((int(triangle.get("v1", "0")), int(triangle.get("v2", "0")),
-                                        int(triangle.get("v3", "0"))))
+                entry.triangles.append((_int(triangle.get("v1", "0")), _int(triangle.get("v2", "0")),
+                                        _int(triangle.get("v3", "0"))))
                 entry.painted = entry.painted or bool(triangle.get(PAINT_COLOUR))
+                if palettes:
+                    colours[_colour(palettes, triangle.get("pid", object_group),
+                                    triangle.get("p1", object_index))] += 1
+            count = len(entry.vertices)
+            if any(not 0 <= index < count for triangle in entry.triangles for index in triangle):
+                raise ThreeMfError(tr("„{name}“ verweist auf Punkte, die es nicht gibt.", name=entry.name))
+            colours.pop("", None)
+            if colours:
+                entry.colour = colours.most_common(1)[0][0]
+                entry.painted = entry.painted or len(colours) > 1
         for component in element.iterfind(f"{CORE}components/{CORE}component"):
             entry.components.append((_normalised(component.get(PRODUCTION_PATH, path)),
-                                     int(component.get("objectid", "0")), _matrix(component.get("transform"))))
-        objects[int(element.get("id", "0"))] = entry
-    items = [(_normalised(item.get(PRODUCTION_PATH, path)), int(item.get("objectid", "0")),
+                                     _int(component.get("objectid", "0")), _matrix(component.get("transform"))))
+        objects[_int(element.get("id", "0"))] = entry
+    items = [(_normalised(item.get(PRODUCTION_PATH, path)), _int(item.get("objectid", "0")),
               _matrix(item.get("transform")))
              for item in root.iterfind(f"{CORE}build/{CORE}item")]
     application = next((str(entry.text or "").strip() for entry in root.iterfind(f"{CORE}metadata")
@@ -214,8 +347,20 @@ def read_file(path: str) -> ReadResult:
     except (OSError, zipfile.BadZipFile) as exc:
         raise ThreeMfError(tr("„{path}“ ist keine lesbare 3MF-Datei: {error}", path=path, error=exc)) from exc
     with archive:
-        root_path = _root_model_path(archive)
+        targets = _relationship_targets(archive)
+        if KEYSTORE_RELATIONSHIP_TYPE in targets:
+            raise ThreeMfError(tr("Die Datei ist verschlüsselt (3MF-Erweiterung Secure Content). 3MFStudio kann "
+                                  "verschlüsselte Dateien nicht lesen."))
+        root_path = targets.get(MODEL_RELATIONSHIP_TYPE, DEFAULT_MODEL_FILE)
         models: dict[str, _Model] = {}
+        standard_filaments: dict[str, int] = {}      # Standardfarbe -> Filament, in der Reihenfolge der Datei
+
+        def standard_filament(colour: str) -> int:
+            if not colour:
+                return 0
+            if colour not in standard_filaments:
+                standard_filaments[colour] = min(len(standard_filaments) + 1, MAX_FILAMENTS)
+            return standard_filaments[colour]
 
         def model(model_path: str) -> _Model:
             if model_path not in models:
@@ -250,8 +395,9 @@ def read_file(path: str) -> ReadResult:
                 else:
                     meta = own.meta if own is not None else {}
                     name = meta.get("name") or entry.name or top.get("name") or f"Teil {len(result.parts) + 1}"
-                    filament = _filament(meta.get("extruder", "")) or _filament(top.get("extruder", "")) or 1
-                    colour = colours[filament - 1] if filament <= len(colours) else ""
+                    filament = (_filament(meta.get("extruder", "")) or _filament(top.get("extruder", ""))
+                                or standard_filament(entry.colour) or 1)
+                    colour = (colours[filament - 1] if filament <= len(colours) else "") or entry.colour
                     triangles = [(a, c, b) for a, b, c in entry.triangles] if _mirrors(placement) \
                         else entry.triangles
                     vertices = [_apply(placement, vertex) for vertex in entry.vertices]

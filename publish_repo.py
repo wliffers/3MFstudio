@@ -25,8 +25,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TARGET = os.path.join(HERE, "Online Repo")
 
 FOLDERS = ["src", "tests", "__snapshots__", "assets"]
-FILES = ["build_allep.py", "build_filaments.py", "build_printers.py", "deploy.py", "publish_repo.py",
-         "LIESMICH_Installation.txt"]
+FILES = ["build_allep.py", "build_filaments.py", "build_printers.py", "deploy.py", "fetch_conformance.py",
+         "publish_repo.py", "LIESMICH_Installation.txt"]
 #: Messprotokolle, die die Formatregeln belegen: Quelle im Projekt -> Name unter docs/messungen/
 MEASUREMENTS = {"spike_g1/ERGEBNIS.md": "G1_Ergebnis.md", "spike_g1/BELEGE.md": "G1_Belege.md",
                 "spike_g2/ERGEBNIS.md": "G2_Ergebnis.md"}
@@ -36,7 +36,7 @@ RELEASE_TO = os.path.join(TARGET, "release")
 SKIP_NAMES = {"__pycache__", "___pyp__", ".pytest_cache", ".claude"}   # .claude: Marker der Entwicklungsumgebung
 SKIP_SUFFIXES = (".pyc", ".pyo", ".log")
 
-TEXT_SUFFIXES = (".py", ".pyp", ".txt", ".md", ".json", ".yml", ".yaml", ".cfg", ".toml", ".xml")
+TEXT_SUFFIXES = (".py", ".pyp", ".txt", ".md", ".json", ".yml", ".yaml", ".cfg", ".toml", ".xml", ".mjs")
 FORBIDDEN = [
     (re.compile(r"C:\\\\?Users\\\\?(?!<USER>)", re.IGNORECASE), "Benutzerpfad"),   # <USER> ist der Platzhalter der Doku
     (re.compile(r"C:\\\\?sandbox", re.IGNORECASE), "Arbeitsordner"),

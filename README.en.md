@@ -66,10 +66,12 @@ helps when an inner body is hard to click in the model.
 Bodies that belong to an Allplan element group and share a filament are exported as one part named after
 the group. In the slicer you recolour that part in one step.
 
-**Show the build plate for orientation.**
-Via the gear you place the build plate of a printer from a list of 93 models, or with a custom size, in the
-model. Its top face lies at Z = 0, its centre at X/Y = 0. Optionally the build volume is shown as 3D lines.
-The build plate serves as orientation in Allplan and is not exported.
+**Build volume and build plate for orientation.**
+The cube icon next to the gear opens the build volume card. Pick a printer from a list of 93 models or enter
+a custom X, Y and Z size; every change is saved at once. **Place build plate** puts the plate into the
+model: top face at Z = 0, centre at X/Y = 0, optionally with the build volume as 3D lines. Plate and lines
+lie on layer **KO_HK** (construction aid). Nothing on this layer is exported – including your own helper
+bodies placed there.
 
 **Import 3MF files.**
 3MFStudio reads 3MF files and places their parts as Allplan bodies. Filament colours and the assignment of
@@ -129,6 +131,9 @@ Which bodies are created:
 - **Parts with an open mesh** are placed as surface bodies. 3MFStudio points this out after the import.
 - **Painted parts** (colour on individual faces) are imported with one colour. The painting itself is not
   imported; 3MFStudio points this out as well.
+- **Standard 3MF colours**, as written by other programs, become filaments with their colour.
+- **Files 3MFStudio cannot read safely** are refused with a reason: files requiring an unsupported extension
+  (for example Beam Lattice, Slice or Production Alternatives), encrypted files and damaged files.
 
 ## Universal 3MF file and Bambu project
 
@@ -189,6 +194,8 @@ as I can, but cannot promise response times or fixes. See [CONTRIBUTING.md](CONT
 `src/` program (`3MFStudio.py` and `threemf_*.py`, the latter testable without Allplan) · `tests/` pytest ·
 `build_allep.py` package · `deploy.py` direct deploy into Allplan · `docs/messungen/` measurement protocols on
 how Bambu Studio reads foreign 3MF files. `python -m pytest tests` takes about 7 minutes.
+`python fetch_conformance.py` fetches the 3MF Consortium conformance suites and the lib3mf checker (Node.js 22)
+into `conformance/`; without it those tests are skipped.
 
 **Internal handling of the Bambu project:** 3MFStudio first saves the universal file. Bambu Studio's command
 line then builds the project from it, which replaces the universal file. Bambu Studio's window is not

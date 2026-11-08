@@ -12,6 +12,9 @@ ___pyp__
 dist/
 release/
 
+# Pruefwerkzeuge des 3MF-Konsortiums (python fetch_conformance.py) - fremde Repos, nie einchecken
+conformance/
+
 # Editor / Betriebssystem
 .vscode/
 .idea/

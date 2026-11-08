@@ -66,10 +66,12 @@ Filamentkarte. Das ist hilfreich, wenn ein innenliegender Körper im Modell schw
 Körper, die in Allplan zu einer Elementgruppe zusammengefasst sind und dasselbe Filament haben, werden als
 ein Teil mit dem Namen der Gruppe exportiert. Im Slicer lässt sich dieses Teil in einem Schritt umfärben.
 
-**Druckplatte als Orientierung anzeigen.**
-Über das Zahnrad legst du die Druckplatte eines Druckers aus einer Liste von 93 Modellen oder mit eigenen
-Maßen im Modell ab. Ihre Oberseite liegt auf Z = 0, ihre Mitte auf X/Y = 0. Auf Wunsch wird der Bauraum
-als 3D-Linien dargestellt. Die Druckplatte dient als Orientierung in Allplan und wird nicht exportiert.
+**Bauraum und Druckplatte als Orientierung.**
+Das Würfel-Symbol neben dem Zahnrad öffnet die Bauraum-Karte. Dort wählst du einen Drucker aus einer Liste
+von 93 Modellen oder trägst eigene Maße für X, Y und Z ein; jede Änderung wird sofort gespeichert. Mit
+**Druckplatte ablegen** entsteht die Platte im Modell: Oberseite auf Z = 0, Mitte auf X/Y = 0, auf Wunsch
+mit dem Bauraum als 3D-Linien. Platte und Linien liegen auf dem Layer **KO_HK** (Hilfskonstruktion).
+Alles auf diesem Layer wird nicht exportiert – auch eigene Hilfskörper, die du dorthin legst.
 
 **3MF-Dateien importieren.**
 3MFStudio liest 3MF-Dateien und legt ihre Teile als Allplan-Körper ab. Filamentfarben und die Zuordnung
@@ -140,6 +142,10 @@ Welche Körper entstehen:
 - **Teile mit offenem Netz** werden als Flächenkörper abgelegt. 3MFStudio weist nach dem Import darauf hin.
 - **Bemalte Teile** (Farbe auf einzelnen Flächen) werden mit einer Farbe übernommen. Die Bemalung selbst
   wird nicht importiert; auch darauf weist 3MFStudio hin.
+- **Farben nach 3MF-Standard**, wie sie andere Programme schreiben, werden zu Filamenten mit ihrer Farbe.
+- **Dateien, die 3MFStudio nicht sicher lesen kann**, werden mit Grund abgelehnt: Dateien, die eine nicht
+  unterstützte Erweiterung voraussetzen (zum Beispiel Beam Lattice, Slice oder Production Alternatives),
+  verschlüsselte Dateien und beschädigte Dateien.
 
 ## Universelle 3MF-Datei und Bambu-Projekt
 
@@ -186,6 +192,8 @@ Datei und meldet das. Farben und Materialtypen legst du dann im Slicer fest.
 - Gerundete Freiformen werden beim Import nicht in glatte Flächen umgewandelt (siehe oben).
 - Die Bemalung einzelner Flächen wird nicht importiert.
 - 3MFStudio prüft nicht, ob ein Modell in den Bauraum passt. Dafür kannst du die Druckplatte einblenden.
+- Pflicht-Erweiterungen von 3MF außer Produktion, Material und Dreiecksgruppen werden nicht unterstützt;
+  solche Dateien werden abgelehnt (siehe oben).
 - Bildschirmfarben sind Näherungen. Das gedruckte Filament kann abweichen.
 - Wenn etwas nicht funktioniert, steht der Grund im Protokoll `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 
@@ -201,6 +209,7 @@ in [CONTRIBUTING.md](CONTRIBUTING.md).
 ```
 src/                  Programm: 3MFStudio.py (Script Object) und threemf_*.py (ohne Allplan testbar)
 tests/                pytest; läuft ohne Allplan, Tests mit Bambu Studio werden ohne Installation übersprungen
+fetch_conformance.py  holt die Konformitätstests und den Prüfer (lib3mf) des 3MF-Konsortiums nach conformance/
 assets/               Symbole für Bibliothek und Actionbar
 docs/messungen/       Messprotokolle: wie Bambu Studio fremde 3MF-Dateien liest
 build_allep.py        erstellt das Paket dist/3MFStudio-<Version>.allep und das Installations-ZIP
@@ -211,7 +220,8 @@ publish_repo.py       stellt diesen Ordner aus dem Arbeitsprojekt zusammen und p
 ```
 
 ```bash
-python -m pytest tests          # etwa 7 Minuten
+python fetch_conformance.py     # einmalig: Konformitätstests des 3MF-Konsortiums (Prüfer braucht Node.js 22)
+python -m pytest tests          # etwa 7 Minuten; ohne conformance/ werden diese Tests übersprungen
 python deploy.py                # nach Allplan 2027; --force bei laufendem Allplan
 python build_allep.py           # Paket erstellen; vorher VERSION in build_allep.py erhöhen
 ```

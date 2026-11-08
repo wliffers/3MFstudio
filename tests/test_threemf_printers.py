@@ -58,8 +58,9 @@ def test_the_plate_choice_is_kept_in_the_settings(tmp_path):
     assert (again["drucker"], again["bauraum"], again["eigene_masse"]) == ("", False, [300.0, 300.0, 400.0])
 
 
-def test_the_settings_panel_has_the_build_plate():
+def test_the_window_has_the_build_plate():
+    """Seit 2026-11-08 in der Bauraum-Karte statt im Zahnrad (Lage geprueft in test_threemf_window)."""
     xaml = window.build_xaml()
-    for name in ("PlatePrinter", "PlateCustom", "PlateWidth", "PlateDepth", "PlateHeight", "PlateVolume", "PlatePlace",
+    for name in ("PlatePrinter", "PlateWidth", "PlateDepth", "PlateHeight", "PlateVolume", "PlatePlace",
                  "UniversalCheck", "FileKind"):
         assert 'x:Name="%s"' % name in xaml

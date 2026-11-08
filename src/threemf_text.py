@@ -108,11 +108,15 @@ ENGLISH: dict[str, str] = {
     "Diese Farbe gibt es in der Liste nicht mehr.": "This colour is no longer in the list.",
     "Allplan hat die Farbe der Körper nicht übernommen.": "Allplan did not accept the colour of the bodies.",
     # --- Druckplatte
-    "Druckplatte": "Build plate",
+    "Bauraum": "Build volume",
+    "Bauraum einstellen": "Set build volume",
+    "Bauraum schließen": "Close build volume",
+    "Drucker": "Printer",
     "Drucker für die Druckplatte": "Printer for the build plate",
-    "B": "W",
-    "T": "D",
-    "H": "H",
+    "Breite": "Width",
+    "Tiefe": "Depth",
+    "Höhe": "Height",
+    "Gespeichert: {printer} · {size} mm": "Saved: {printer} · {size} mm",
     "Breite in mm": "Width in mm",
     "Tiefe in mm": "Depth in mm",
     "Höhe in mm": "Height in mm",
@@ -120,8 +124,16 @@ ENGLISH: dict[str, str] = {
     "Legt die Platte ins Modell: Oberseite auf Z = 0, Mitte auf X = 0 / Y = 0":
         "Places the plate in the model: top face at Z = 0, centre at X = 0 / Y = 0",
     "Bauraum als Linien": "Build volume as lines",
-    "Oberseite auf Z = 0, Mitte auf X/Y = 0 · kommt nicht in die 3MF-Datei":
-        "Top face at Z = 0, centre at X/Y = 0 · not written to the 3MF file",
+    "Oberseite auf Z = 0, Mitte auf X/Y = 0 · Layer KO_HK, kommt nicht in die 3MF-Datei":
+        "Top face at Z = 0, centre at X/Y = 0 · layer KO_HK, not written to the 3MF file",
+    "Den Layer „{layer}“ gibt es in diesem Projekt nicht. Die Druckplatte liegt deshalb auf dem "
+    "eingestellten Layer – beim Auswählen bitte nicht mit anklicken.":
+        "The layer “{layer}” does not exist in this project. The build plate is therefore on the current layer – "
+        "please do not pick it when selecting bodies.",
+    "Ein Körper liegt auf dem Layer „{layer}“ (Hilfskonstruktion) und kommt nicht in die Datei.":
+        "One body is on the layer “{layer}” (construction aid) and is left out of the file.",
+    "{number} Körper liegen auf dem Layer „{layer}“ (Hilfskonstruktion) und kommen nicht in die Datei.":
+        "{number} bodies are on the layer “{layer}” (construction aid) and are left out of the file.",
     "Eigene Maße": "Custom size",
     "„{text}“ ist keine Zahl. Maße bitte in mm eingeben, z. B. 256.":
         "“{text}” is not a number. Please enter sizes in mm, e.g. 256.",
@@ -206,6 +218,17 @@ ENGLISH: dict[str, str] = {
     "Eine Lageangabe hat {count} statt 12 Zahlen.": "A transform has {count} numbers instead of 12.",
     "In der Datei fehlt der Teil „{name}“.": "The file is missing the part “{name}”.",
     "Der Teil „{name}“ ist beschädigt: {error}": "The part “{name}” is damaged: {error}",
+    "Der Teil „{name}“ enthält eine DTD-Angabe. 3MF erlaubt das nicht – die Datei wird aus Sicherheitsgründen nicht "
+    "gelesen.": "The part “{name}” contains a DTD declaration. 3MF does not allow this – for security reasons the "
+                "file is not read.",
+    "„{text}“ ist in der Datei keine gültige Zahl.": "“{text}” in the file is not a valid number.",
+    "Die Datei verlangt die 3MF-Erweiterung „{names}“, die 3MFStudio nicht kennt. Ohne sie wäre der Körper "
+    "unvollständig – die Datei wird deshalb nicht gelesen.":
+        "The file requires the 3MF extension “{names}”, which 3MFStudio does not know. Without it the body would "
+        "be incomplete – so the file is not read.",
+    "Die Datei vergibt die Nummer {id} doppelt.": "The file uses the number {id} twice.",
+    "Die Datei ist verschlüsselt (3MF-Erweiterung Secure Content). 3MFStudio kann verschlüsselte Dateien nicht "
+    "lesen.": "The file is encrypted (3MF extension Secure Content). 3MFStudio cannot read encrypted files.",
     "Unbekannte Längeneinheit „{unit}“.": "Unknown length unit “{unit}”.",
     "„{path}“ ist keine lesbare 3MF-Datei: {error}": "“{path}” is not a readable 3MF file: {error}",
     "Die Datei verweist im Kreis auf ihre eigenen Körper.": "The file refers to its own bodies in a circle.",

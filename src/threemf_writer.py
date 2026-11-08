@@ -120,7 +120,8 @@ def _model_xml(layout) -> str:
         lines.append("   </components>")
         lines.append("  </object>")
     lines += [" </resources>", " <build>"]
-    lines += [f'  <item objectid="{wrapper}" transform="{IDENTITY_3X4}" printable="1"/>' for wrapper, _n, _m in layout]
+    # Kein printable="1": nicht im Kernstandard, lib3mf lehnt es streng ab; Bambu druckt gleich (gemessen 2026-11-08).
+    lines += [f'  <item objectid="{wrapper}" transform="{IDENTITY_3X4}"/>' for wrapper, _n, _m in layout]
     lines += [" </build>", "</model>"]
     return "\n".join(lines) + "\n"
 

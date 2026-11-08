@@ -154,6 +154,15 @@ class Session:
             return 0, len(bodies)
         return self.assign(filament, bodies), 0
 
+    def release(self, keys) -> int:
+        """Nimmt Koerper aus der Zuordnung (z. B. inzwischen auf dem Hilfslayer). Rueckgabe: wie viele es waren."""
+        released = 0
+        for key in keys:
+            if self._filament.pop(key, None) is not None:
+                self._bodies.pop(key, None)
+                released += 1
+        return released
+
     def clear(self, filament: int) -> int:
         keys = [key for key, value in self._filament.items() if value == filament]
         for key in keys:

@@ -264,6 +264,20 @@ def palette() -> dict[int, tuple[int, int, int]]:
     return table
 
 
+HELP_LAYER = "KO_HK"                       # Hilfskonstruktion: Druckplatte, Bauraum - und alles darauf bleibt aus der 3MF
+
+
+def layer_id(short_name: str, document) -> int:
+    """Layer-ID zum Kurznamen; 0 = gibt es im Projekt nicht (GetIDByShortName liefert dann 0, live gemessen in
+    AI ModelLink 2026-09-16; Signatur (Kurzname, Dokument) per inspect_symbol 2027)."""
+    return int(AllplanBaseEle.LayerService.GetIDByShortName(short_name, document))
+
+
+def on_layer(element, layer: int) -> bool:
+    """True, wenn das Bauteil auf dem Layer mit dieser ID liegt; 0 = kein Layer, nie wahr."""
+    return bool(layer) and int(element.GetCommonProperties().Layer) == layer
+
+
 def layer_name_of(element, document) -> str:
     """Layer des Bauteils als "Kurz (Lang)"."""
     return AllplanBaseEle.LayerService.GetNameByID(int(element.GetCommonProperties().Layer), document.GetDocumentID())
@@ -571,12 +585,14 @@ def import_geometries(part: Part, on_piece: Callable[[int, int], None] | None = 
     return [(body, part if index == 0 else None) for index, body in enumerate(bodies)], True
 
 
-def _props(colour: int | None):
+def _props(colour: int | None, layer: int = 0):
     props = AllplanBaseEle.CommonProperties()
     props.GetGlobalProperties()
     if colour is not None:
         props.ColorByLayer = False
         props.Color = colour
+    if layer:
+        props.Layer = layer
     return props
 
 
@@ -585,19 +601,20 @@ def model_element(part: Part, colour: int | None = None):
     return AllplanBasisEle.ModelElement3D(_props(colour), solid_from_part(part))
 
 
-def plate_elements(box: tuple, lines: list, plate_colour: int, line_colour: int) -> list:
-    """Druckplatte als Koerper (Quader aus `box` = (Ecke, Ausdehnung)) und Bauraum-Kanten als 3D-Linien.
+def plate_elements(box: tuple, lines: list, plate_colour: int, line_colour: int, layer: int = 0) -> list:
+    """Druckplatte als Koerper (Quader aus `box` = (Ecke, Ausdehnung)) und Bauraum-Kanten als 3D-Linien,
+    auf dem Layer `layer` (ID; 0 = eingestellter Layer).
 
     Quader: BRep3D.CreateCuboid (live 2026-11-07); 3D-Linie: ModelElement3D mit Polyline3D (AI ModelLink
     create_polyline mit raum=1)."""
     (x, y, z), (dx, dy, dz) = box
     cuboid = AllplanGeo.BRep3D.CreateCuboid(AllplanGeo.AxisPlacement3D(AllplanGeo.Point3D(x, y, z)), dx, dy, dz)
-    elements = [AllplanBasisEle.ModelElement3D(_props(plate_colour), cuboid)]
+    elements = [AllplanBasisEle.ModelElement3D(_props(plate_colour, layer), cuboid)]
     for points in lines:
         line = AllplanGeo.Polyline3D()
         for px, py, pz in points:
             line += AllplanGeo.Point3D(px, py, pz)
-        elements.append(AllplanBasisEle.ModelElement3D(_props(line_colour), line))
+        elements.append(AllplanBasisEle.ModelElement3D(_props(line_colour, layer), line))
     return elements
 
 

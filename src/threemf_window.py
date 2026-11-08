@@ -12,7 +12,8 @@ Klick als `controller.window_action(name, ...)` weiter. Namen der Aktionen:
     pick(n)  clear(n)  rename(n, text)  scale(on)  reduction(wert)  export()  slicer()  import()  closed()
     slicer_choose()  slicer_reset()       (Einstellungen hinter dem Zahnrad)
     colour_open(n)  swap(a, b)            (Farbkachel antippen, Tauschen ⇅)
-    plate(drucker, bauraum, breite, tiefe, hoehe)   (Druckplatte im Zahnrad-Menü; drucker "" = eigene Maße)
+    plate(drucker, bauraum, breite, tiefe, hoehe)        (Bauraum-Karte: Druckplatte ablegen; drucker "" = eigene Maße)
+    volume_save(drucker, bauraum, breite, tiefe, hoehe)  (Bauraum-Karte: jede Änderung sofort speichern)
     choose(n, hersteller, sorte, farbe)  choose_mine(n, index)  choose_own(n, text, hersteller, sorte)  choose_auto(n)
 Die Farbauswahl zeigt die Liste, die `open_colours` bekommt (threemf_filaments.Catalogue).
 
@@ -32,6 +33,8 @@ import traceback
 import types
 
 from threemf_filaments import normal_hex  # pyright: ignore[reportMissingImports]
+from threemf_model import ThreeMfError  # pyright: ignore[reportMissingImports]
+from threemf_printers import size_value  # pyright: ignore[reportMissingImports]
 from threemf_text import tr  # pyright: ignore[reportMissingImports]
 
 LOG = logging.getLogger("threemfstudio.part")
@@ -53,6 +56,9 @@ _WM_KEYDOWN, _WM_KEYUP, _VK_ESCAPE = 0x0100, 0x0101, 0x1B
 CARD, CARD_ARMED = "#FFFFFF", "#EAF1FE"
 LINE, LINE_ARMED = "#DDE3EC", "#2563EB"
 SWATCH_RING, SUB = "#C4CBD8", "#566074"
+BAD = "#DC2626"                            # Rahmen und Zeile bei einer ungueltigen Eingabe
+SIZE_BOXES = ("PlateWidth", "PlateDepth", "PlateHeight")   # X, Y, Z der Bauraum-Karte
+PANELS = ("SettingsPanel", "VolumePanel")  # Karten hinter Kopfzeilen-Knoepfen; dazu kommt die Farbauswahl
 
 
 # ---------------------------------------------------------------------------------------------- ohne WPF pruefbar
@@ -266,6 +272,8 @@ _ICON_STROKE = ('Stroke="{Binding Foreground, RelativeSource={RelativeSource Anc
                 'StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"')
 _PRINTER = "M3,3 H21 M8,3 V6 L10,9 H14 L16,6 V3 M11,9 V11 L12,12 L13,11 V9 M8,15 H16 M6,18 H18 M4,21 H20"
 _OUTWARD = "M14,4 H20 V10 M20,4 L12,12 M18,14 V19 Q18,20 17,20 H5 Q4,20 4,19 V7 Q4,6 5,6 H10"
+# Bauraum: Wuerfel mit Hoehenmass links (Entwurf B, 2026-11-08) - ohne Rahmen, der Knopf hat schon eine Flaeche
+_VOLUME = "M14,3.5 L21,7 V16 L14,19.5 L7,16 V7 Z M7,7 L14,10.5 L21,7 M14,10.5 V19.5 M3,7 V16 M1.6,7 H4.4 M1.6,16 H4.4"
 
 
 def _slicer_button() -> str:
@@ -285,6 +293,49 @@ def _slicer_button() -> str:
 
 COLOUR_TILE = 22                           # Kantenlaenge einer Farbkachel
 COLOUR_TILES_MAX_HEIGHT = 156              # danach Bildlauf - etwa sechs Reihen
+
+
+def _size_box(column: int, name: str, axis: str, label: str, tip: str) -> str:
+    """Ein Massfeld der Bauraum-Karte: "X Breite" darueber, rechts "mm". `label`/`tip` kommen schon uebersetzt."""
+    return f"""
+<StackPanel Grid.Column="{column}">
+<TextBlock FontSize="12" Foreground="{SUB}"><Run Text="{axis}" FontWeight="SemiBold" Foreground="#1B2333"/><Run Text=" {label}"/></TextBlock>
+<DockPanel Margin="0,2,0,0">
+<TextBlock DockPanel.Dock="Right" Text="mm" Margin="4,0,0,0" FontSize="12" Foreground="{SUB}" VerticalAlignment="Center"/>
+<TextBox x:Name="{name}" Height="26" Padding="2,0,2,0" VerticalContentAlignment="Center" AutomationProperties.Name="{tip}"/>
+</DockPanel>
+</StackPanel>"""
+
+
+def _volume_panel() -> str:
+    """Bauraum-Karte hinter dem Wuerfel in der Kopfzeile (Wunsch 2026-11-08): Drucker, X/Y/Z, Druckplatte.
+    Gleiche Form wie die Farbauswahl. Jede Aenderung wird sofort gespeichert; ins Modell kommt nur "Druckplatte ablegen"."""
+    boxes = (_size_box(0, "PlateWidth", "X", T('Breite'), T('Breite in mm'))
+             + _size_box(2, "PlateDepth", "Y", T('Tiefe'), T('Tiefe in mm'))
+             + _size_box(4, "PlateHeight", "Z", T('Höhe'), T('Höhe in mm')))
+    return f"""
+<Border x:Name="VolumePanel" Visibility="Collapsed" Margin="12,0,12,10" Padding="12,8,8,12" CornerRadius="12" Background="{CARD}" BorderBrush="{LINE_ARMED}" BorderThickness="1.5">
+<StackPanel>
+<DockPanel>
+<Button x:Name="VolumeClose" DockPanel.Dock="Right" Style="{{StaticResource Ghost}}" Width="30" Height="30" Content="✕" ToolTip="{T('Bauraum schließen')}" AutomationProperties.Name="{T('Bauraum schließen')}"/>
+<TextBlock Text="{T('Bauraum')}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+</DockPanel>
+<StackPanel Margin="0,0,4,0">
+<TextBlock Text="{T('Drucker')}" FontSize="12" Foreground="{SUB}"/>
+<ComboBox x:Name="PlatePrinter" Height="28" Margin="0,2,0,0" MaxDropDownHeight="320" AutomationProperties.Name="{T('Drucker für die Druckplatte')}"/>
+<Grid Margin="0,8,0,0">
+<Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+{boxes}
+</Grid>
+<DockPanel Margin="0,10,0,0">
+<Button x:Name="PlatePlace" DockPanel.Dock="Right" Style="{{StaticResource Soft}}" Height="34" Padding="12,0,12,0" Content="{T('Druckplatte ablegen')}" ToolTip="{T('Legt die Platte ins Modell: Oberseite auf Z = 0, Mitte auf X = 0 / Y = 0')}"/>
+<CheckBox x:Name="PlateVolume" Content="{T('Bauraum als Linien')}" VerticalAlignment="Center" Foreground="#1B2333"/>
+</DockPanel>
+<TextBlock x:Name="VolumeStatus" Margin="0,6,0,0" FontSize="12" Foreground="{SUB}" TextWrapping="Wrap"/>
+<TextBlock Text="{T('Oberseite auf Z = 0, Mitte auf X/Y = 0 · Layer KO_HK, kommt nicht in die 3MF-Datei')}" Margin="0,4,0,0" FontSize="11" Foreground="{SUB}" TextWrapping="Wrap"/>
+</StackPanel>
+</StackPanel>
+</Border>"""
 
 
 def _colour_panel() -> str:
@@ -333,6 +384,7 @@ def build_xaml() -> str:
 {_style("Soft", 10, "#FFFFFF", "#C7D7FB", "#1E40AF")}
 {_style("Primary", 10, "#2563EB", "#2563EB", "#FFFFFF", disabled=True)}
 {_style("Ghost", 10, "Transparent", "Transparent", SUB)}
+{_style("GhostArmed", 10, CARD_ARMED, "Transparent", LINE_ARMED)}
 {_style("Pill", 20, "#FFFFFF", LINE, "#1B2333")}
 {_style("PillArmed", 20, CARD_ARMED, LINE_ARMED, "#1B2333")}
 {_style("Slicer", 10, "#FFFFFF", "#AEB7C7", "#1B2333", disabled=True)}
@@ -343,6 +395,9 @@ def build_xaml() -> str:
 <DockPanel x:Name="Header" Background="Transparent" Margin="12,8,6,10" Cursor="SizeAll" ToolTip="{T('Hier anfassen und verschieben')}">
 <Button x:Name="Close" DockPanel.Dock="Right" Style="{{StaticResource Ghost}}" Width="36" Height="36" VerticalAlignment="Top" Content="✕" ToolTip="{T('3MFStudio schließen')}" AutomationProperties.Name="{T('3MFStudio schließen')}"/>
 <Button x:Name="Settings" DockPanel.Dock="Right" Style="{{StaticResource Ghost}}" Width="36" Height="36" VerticalAlignment="Top" Content="⚙" FontSize="16" ToolTip="{T('Einstellungen')}" AutomationProperties.Name="{T('Einstellungen')}"/>
+<Button x:Name="Volume" DockPanel.Dock="Right" Style="{{StaticResource Ghost}}" Width="36" Height="36" VerticalAlignment="Top" ToolTip="{T('Bauraum')}" AutomationProperties.Name="{T('Bauraum einstellen')}">
+<Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Path Data="{_VOLUME}" {_ICON_STROKE}/></Canvas></Viewbox>
+</Button>
 <Button x:Name="Collapse" DockPanel.Dock="Right" Style="{{StaticResource Ghost}}" Width="36" Height="36" VerticalAlignment="Top" Content="—" ToolTip="{T('Zur Leiste verkleinern')}" AutomationProperties.Name="{T('Zur Leiste verkleinern')}"/>
 <TextBlock DockPanel.Dock="Left" Text="⋮⋮" Foreground="{SUB}" Width="14" Margin="0,3,6,0" VerticalAlignment="Top"/>
 <StackPanel VerticalAlignment="Center">
@@ -362,21 +417,10 @@ def build_xaml() -> str:
 </StackPanel>
 <CheckBox x:Name="UniversalCheck" Margin="0,10,0,0" Content="{T('Universelle 3MF schreiben')}" Foreground="#1B2333" ToolTip="{T('Aus: Ist Bambu Studio der Slicer, wird die Datei gleich das Bambu-Projekt mit Farben, Sorten und dem Drucker aus Bambu Studio. An: neutrale 3MF für jeden Slicer, ohne Bambu-Daten.')}"/>
 <TextBlock x:Name="FileKind" Margin="0,4,0,0" FontSize="11" Foreground="{SUB}" TextWrapping="Wrap"/>
-<TextBlock Text="{T('Druckplatte')}" Margin="0,14,0,0"/>
-<ComboBox x:Name="PlatePrinter" Height="28" Margin="0,4,0,0" MaxDropDownHeight="320" AutomationProperties.Name="{T('Drucker für die Druckplatte')}"/>
-<StackPanel x:Name="PlateCustom" Orientation="Horizontal" Margin="0,6,0,0" Visibility="Collapsed">
-<TextBlock Text="{T('B')}" VerticalAlignment="Center" Margin="0,0,4,0"/><TextBox x:Name="PlateWidth" Width="56" Height="26" VerticalContentAlignment="Center" AutomationProperties.Name="{T('Breite in mm')}"/>
-<TextBlock Text="{T('T')}" VerticalAlignment="Center" Margin="10,0,4,0"/><TextBox x:Name="PlateDepth" Width="56" Height="26" VerticalContentAlignment="Center" AutomationProperties.Name="{T('Tiefe in mm')}"/>
-<TextBlock Text="{T('H')}" VerticalAlignment="Center" Margin="10,0,4,0"/><TextBox x:Name="PlateHeight" Width="56" Height="26" VerticalContentAlignment="Center" AutomationProperties.Name="{T('Höhe in mm')}"/>
-<TextBlock Text="mm" VerticalAlignment="Center" Margin="6,0,0,0" Foreground="{SUB}"/>
-</StackPanel>
-<DockPanel Margin="0,8,0,0">
-<Button x:Name="PlatePlace" DockPanel.Dock="Right" Style="{{StaticResource Soft}}" Height="34" Padding="12,0,12,0" Content="{T('Druckplatte ablegen')}" ToolTip="{T('Legt die Platte ins Modell: Oberseite auf Z = 0, Mitte auf X = 0 / Y = 0')}"/>
-<CheckBox x:Name="PlateVolume" Content="{T('Bauraum als Linien')}" VerticalAlignment="Center" Foreground="#1B2333"/>
-</DockPanel>
-<TextBlock Text="{T('Oberseite auf Z = 0, Mitte auf X/Y = 0 · kommt nicht in die 3MF-Datei')}" Margin="0,4,0,0" FontSize="11" Foreground="{SUB}" TextWrapping="Wrap"/>
 </StackPanel>
 </Border>
+
+{_volume_panel()}
 
 {_colour_panel()}
 
@@ -602,7 +646,12 @@ class StudioWindow:
         self._choice = None                 # die gewaehlte Farbe des Filaments (threemf_session.Choice) oder None
         self._lines: list = []              # Sorten des gewaehlten Herstellers, Reihenfolge wie in der Liste
         self._mine: list = []               # "Meine Farben" (threemf_session.Choice)
-        self._printers: list[str] = []      # Druckernamen der Liste "Druckplatte"; danach kommt "Eigene Maße"
+        self._printers: list[str] = []      # Druckernamen der Bauraum-Liste; danach kommt "Eigene Maße"
+        self._sizes: list = []              # [Breite, Tiefe, Hoehe] je Drucker, gleiche Reihenfolge
+        self._custom: list = []             # die eigenen Masse ("Eigene Maße")
+        self._size_problem = ""             # Meldung zu einem ungueltigen Massfeld ("" = alles gueltig)
+        self._saved_volume: tuple = ()      # zuletzt gespeicherte Bauraum-Wahl - unveraendert wird nicht neu geschrieben
+        self._volume_note = ""              # die Zeile "Gespeichert: ..." aus der letzten Anzeige
         self._tile_keep: list = []          # Rueckrufe der Farbkacheln - beim Neubau der Kacheln freigegeben
         self._mine_keep: list = []
 
@@ -679,13 +728,19 @@ class StudioWindow:
         self._click("Export", lambda: self._send("export", focus_model=False))
         self._click("BarExport", lambda: self._send("export", focus_model=False))
         self._click("Slicer", lambda: self._send("slicer", focus_model=False))
-        self._click("Settings", self._toggle_settings)
+        self._click("Settings", lambda: self._toggle_panel("SettingsPanel"))
+        self._click("Volume", lambda: self._toggle_panel("VolumePanel"))
+        self._click("VolumeClose", lambda: self._show_panel(""))
         self._click("SlicerChoose", lambda: self._send("slicer_choose", focus_model=False))
         self._click("SlicerReset", lambda: self._send("slicer_reset", focus_model=False))
         self._click("UniversalCheck", lambda: self._send("universal", bool(self._part("UniversalCheck").IsChecked),
                                                          focus_model=False))
         self._click("PlatePlace", self._place_plate)
-        self._part("PlatePrinter").SelectionChanged += self._guard(lambda _args: self._show_plate_custom())
+        self._part("PlatePrinter").SelectionChanged += self._guard(lambda _args: self._printer_chosen())
+        self._click("PlateVolume", self._save_volume)
+        for name in SIZE_BOXES:
+            self._part(name).LostKeyboardFocus += self._guard(lambda _args: self._commit_sizes())
+        self._part("VolumePanel").KeyDown += self._guard(self._volume_key)
         self._click("Import", lambda: self._send("import"))
         self._click("Collapse", lambda: self._set_collapsed(True))
         self._click("Expand", lambda: self._set_collapsed(False))
@@ -743,13 +798,82 @@ class StudioWindow:
         index = int(self._part("PlatePrinter").SelectedIndex)
         return self._printers[index] if 0 <= index < len(self._printers) else ""
 
-    def _show_plate_custom(self) -> None:
-        from System.Windows import Visibility                # type: ignore  # pylint: disable=import-outside-toplevel
-        custom = int(self._part("PlatePrinter").SelectedIndex) == len(self._printers)
-        self._part("PlateCustom").Visibility = Visibility.Visible if custom else Visibility.Collapsed
+    def _set_sizes(self, sizes: list) -> None:
+        """X/Y/Z zeigen, ohne dass das Eintragen als Eingabe zaehlt; rote Rahmen verschwinden."""
+        from System.Windows.Controls import Control          # type: ignore  # pylint: disable=import-outside-toplevel
+        updating, self._updating = self._updating, True
+        try:
+            for name, value in zip(SIZE_BOXES, sizes):
+                self._part(name).Text = "%g" % float(value)
+                self._part(name).ClearValue(Control.BorderBrushProperty)
+        finally:
+            self._updating = updating
+        self._size_problem = ""
+
+    def _printer_chosen(self) -> None:
+        """Ein Drucker fuellt X/Y/Z mit seinen Massen, "Eigene Maße" mit den gespeicherten; dann speichern."""
+        index = int(self._part("PlatePrinter").SelectedIndex)
+        self._set_sizes(self._sizes[index] if 0 <= index < len(self._sizes) else self._custom)
+        self._save_volume()
+
+    def _commit_sizes(self) -> None:
+        """Feld verlassen oder Enter: alle drei Masse pruefen; eine Abweichung vom Drucker heisst "Eigene Maße"."""
+        from System.Windows.Controls import Control          # type: ignore  # pylint: disable=import-outside-toplevel
+        values, problem = [], ""
+        for name in SIZE_BOXES:
+            box = self._part(name)
+            try:
+                values.append(size_value(str(box.Text or "")))
+                box.ClearValue(Control.BorderBrushProperty)
+            except ThreeMfError as exc:
+                box.BorderBrush = self._brush(BAD)
+                problem = problem or str(exc)
+        self._size_problem = problem
+        if problem:
+            self._volume_status(problem, True)
+            return
+        self._volume_status(self._volume_note)
+        combo = self._part("PlatePrinter")
+        index = int(combo.SelectedIndex)
+        if 0 <= index < len(self._sizes) and [float(v) for v in self._sizes[index]] != values:
+            updating, self._updating = self._updating, True
+            try:
+                combo.SelectedIndex = len(self._printers)    # "Eigene Maße" - ohne die Masse neu zu fuellen
+            finally:
+                self._updating = updating
+        if int(combo.SelectedIndex) == len(self._printers):
+            self._custom = values
+        self._save_volume()
+
+    def _save_volume(self) -> None:
+        if self._size_problem:
+            return
+        choice = (self._plate_name(), bool(self._part("PlateVolume").IsChecked),
+                  *[str(self._part(name).Text or "") for name in SIZE_BOXES])
+        if choice != self._saved_volume:
+            self._saved_volume = choice
+            self._send("volume_save", *choice, focus_model=False)
+
+    def _volume_key(self, args) -> None:
+        from System.Windows.Input import Key                 # type: ignore  # pylint: disable=import-outside-toplevel
+        if args.Key == Key.Enter:
+            args.Handled = True
+            self._commit_sizes()
+        elif args.Key == Key.Escape:
+            args.Handled = True
+            self._show_panel("")
+            self.focus_allplan()
+
+    def _volume_status(self, text: str, bad: bool = False) -> None:
+        status = self._part("VolumeStatus")
+        status.Text = text
+        status.Foreground = self._brush(BAD if bad else SUB)
 
     def _place_plate(self) -> None:
-        sizes = [str(self._part(name).Text or "") for name in ("PlateWidth", "PlateDepth", "PlateHeight")]
+        self._commit_sizes()
+        if self._size_problem:
+            return
+        sizes = [str(self._part(name).Text or "") for name in SIZE_BOXES]
         self._send("plate", self._plate_name(), bool(self._part("PlateVolume").IsChecked), *sizes)
 
     def _fill_plate(self, view: dict) -> None:
@@ -757,20 +881,31 @@ class StudioWindow:
         if self._printers or not view.get("printers"):
             return
         self._printers = list(view["printers"])
+        self._sizes = [[float(v) for v in size] for size in view.get("printer_sizes", [])]
+        self._custom = [float(v) for v in view.get("custom_size", [])]
         combo = self._part("PlatePrinter")
         for name in self._printers + [tr("Eigene Maße")]:
             combo.Items.Add(name)
         chosen = view.get("printer", "")
         combo.SelectedIndex = self._printers.index(chosen) if chosen in self._printers else len(self._printers)
         self._part("PlateVolume").IsChecked = bool(view.get("volume", True))
-        for name, value in zip(("PlateWidth", "PlateDepth", "PlateHeight"), view.get("custom_size", [])):
-            self._part(name).Text = "%g" % float(value)
-        self._show_plate_custom()
+        index = int(combo.SelectedIndex)
+        self._set_sizes(self._sizes[index] if 0 <= index < len(self._sizes) else self._custom)
 
-    def _toggle_settings(self) -> None:
+    def _toggle_panel(self, name: str) -> None:
         from System.Windows import Visibility                # type: ignore  # pylint: disable=import-outside-toplevel
-        panel = self._part("SettingsPanel")
-        panel.Visibility = Visibility.Collapsed if panel.Visibility == Visibility.Visible else Visibility.Visible
+        self._show_panel("" if self._part(name).Visibility == Visibility.Visible else name)
+
+    def _show_panel(self, name: str) -> None:
+        """Hoechstens eine Karte offen (Wunsch 2026-11-08): `name` aus PANELS oder "" = alle zu.
+        Der Knopf der offenen Karte ist hellblau hinterlegt."""
+        from System.Windows import Visibility                # type: ignore  # pylint: disable=import-outside-toplevel
+        if name and self._colour_for:
+            self.close_colours()
+        for panel, button in zip(PANELS, ("Settings", "Volume")):
+            armed = panel == name
+            self._part(panel).Visibility = Visibility.Visible if armed else Visibility.Collapsed
+            self._part(button).Style = self.root.FindResource("GhostArmed" if armed else "Ghost")
 
     def _set_collapsed(self, collapsed: bool) -> None:
         self.state.collapsed = collapsed
@@ -837,6 +972,7 @@ class StudioWindow:
     def open_colours(self, number: int, catalogue, choice, mine: list) -> None:
         """Zeigt die Farbauswahl fuer ein Filament: Liste `catalogue`, aktuelle Wahl `choice`, "Meine Farben"."""
         from System.Windows import Visibility                # type: ignore  # pylint: disable=import-outside-toplevel
+        self._show_panel("")
         self._colour_for, self._catalogue, self._choice, self._mine = number, catalogue, choice, list(mine)
         self._part("ColourTitle").Text = tr("Farbe für Filament {number}", number=number)
         self._part("ColourHex").Text = choice.hex if choice else "#"
@@ -1054,6 +1190,9 @@ class StudioWindow:
             universal.IsChecked = bool(view.get("universal"))
         self._part("FileKind").Text = view.get("file_kind", "")
         self._fill_plate(view)
+        self._volume_note = view.get("volume_note", "")
+        if not self._size_problem:
+            self._volume_status(self._volume_note)
 
     # -- Lebenszyklus --------------------------------------------------------------------------
 
