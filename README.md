@@ -5,7 +5,7 @@
 <h1 align="center">3MFStudio</h1>
 
 <p align="center">
-  <strong>Allplan-Körper als .3mf expportieren/importieren</strong><br>
+  <strong>Allplan-Körper als .3mf exportieren/importieren</strong><br>
   Ein PythonPart für Allplan 2027.
 </p>
 
