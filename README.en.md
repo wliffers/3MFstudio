@@ -18,6 +18,11 @@
 </p>
 
 <p align="center">
+  <a href="../../releases/latest"><img alt="Download for Windows (latest release)" src="https://img.shields.io/badge/Windows-Download-2563eb?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjkuNSIgaGVpZ2h0PSI5LjUiLz48cmVjdCB4PSIxMi41IiB5PSIyIiB3aWR0aD0iOS41IiBoZWlnaHQ9IjkuNSIvPjxyZWN0IHg9IjIiIHk9IjEyLjUiIHdpZHRoPSI5LjUiIGhlaWdodD0iOS41Ii8%2BPHJlY3QgeD0iMTIuNSIgeT0iMTIuNSIgd2lkdGg9IjkuNSIgaGVpZ2h0PSI5LjUiLz48L3N2Zz4%3D"></a>
+  <a href="https://www.linkedin.com/in/willi-liffers-71660b319/"><img alt="Willi Liffers on LinkedIn" src="https://img.shields.io/badge/LinkedIn-Willi%20Liffers-0a66c2?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPGNpcmNsZSBjeD0iNS41IiBjeT0iNSIgcj0iMi4zIi8%2BPHJlY3QgeD0iMy40IiB5PSI4LjgiIHdpZHRoPSI0LjIiIGhlaWdodD0iMTIuNyIvPjxwYXRoIGQ9Ik0xMCA4LjhoNHYxLjljLjYtMS4xIDIuMS0yLjIgNC4yLTIuMiA0LjIgMCA1IDIuNyA1IDYuM3Y2LjdoLTQuMnYtNS45YzAtMS40IDAtMy4yLTItMy4ycy0yLjMgMS41LTIuMyAzLjF2NkgxMHoiLz48L3N2Zz4%3D"></a>
+</p>
+
+<p align="center">
   <a href="#features">Features</a> ·
   <a href="#installation">Installation</a> ·
   <a href="#export-from-allplan">Export</a> ·
