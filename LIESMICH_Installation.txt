@@ -1,4 +1,4 @@
-3MFStudio 1.1.3 – PythonPart für Allplan 2027
+3MFStudio 1.1.4 – PythonPart für Allplan 2027
 Hersteller: Willi Liffers
 ==============================================
 
@@ -13,6 +13,9 @@ Was das Werkzeug macht
   die Körper zweier Filamente – praktisch bei ineinander steckenden Körpern.
 - Allplan-Elementgruppen bleiben zusammen: Körper einer Gruppe auf demselben Filament werden in der
   Datei EIN Teil mit dem Namen der Gruppe – in Bambu Studio mit einem Klick umzufärben.
+- Die Zuordnung bleibt am Körper: 3MFStudio schreibt das Filament als Attribut „3MF-Filament“ an jeden
+  zugeordneten Körper. Ändern, Verschieben, Kopieren, Verschneiden und ein Neustart von Allplan behalten
+  die Zuordnung; beim Schreiben wird die aktuelle Form jedes Körpers gelesen.
 - Bauraum und Druckplatte (Würfel neben dem Zahnrad): Drucker aus einer Liste (93, Bambu Lab zuerst) oder
   eigene Maße X/Y/Z – jede Änderung wird sofort gespeichert. „Druckplatte ablegen“ legt die Platte mit der
   Oberseite auf Z = 0, Mitte auf X/Y = 0, den Bauraum auf Wunsch als Linien – auf den Layer KO_HK
@@ -29,7 +32,7 @@ Voraussetzungen
 
 Installation – Weg A (empfohlen): Plugin-Manager
 1. Allplan 2027 starten.
-2. Die Datei 3MFStudio-1.1.3.allep aus dieser ZIP mit der Maus in das Allplan-Fenster ziehen.
+2. Die Datei 3MFStudio-1.1.4.allep aus dieser ZIP mit der Maus in das Allplan-Fenster ziehen.
 3. Den Meldungen des Plugin-Managers folgen, danach Allplan einmal neu starten.
 4. Das Werkzeug steht danach
    - in der Bibliothek unter Privat > Willi Liffers > 3MFStudio und
@@ -60,7 +63,7 @@ Hinweise
   LICENSE_OpenFilamentDatabase.txt im Programmordner). Farben auf dem Bildschirm sind Näherungen.
 
 
-3MFStudio 1.1.3 – PythonPart for Allplan 2027 (English)
+3MFStudio 1.1.4 – PythonPart for Allplan 2027 (English)
 =======================================================
 
 - Writes Allplan bodies as a 3MF file for 3D printing: each body gets a filament (up to 16); names and
@@ -68,6 +71,9 @@ Hinweise
   clean bodies, smooth round faces for parts with a constant cross-section. Choose colour and type per
   filament from a list of real filaments (Bambu Lab first) or type your own colour; Allplan recolours the
   bodies. ⇅ swaps the bodies of two filaments. Colour list: Open Filament Database (MIT licence).
+  The assignment stays with the body: 3MFStudio writes the filament as attribute "3MF-Filament" to every
+  assigned body. Editing, moving, copying, Boolean operations and an Allplan restart keep the assignment;
+  writing the file reads the current shape of each body.
   Build volume (cube next to the gear): pick a printer (93, Bambu Lab first) or a custom X/Y/Z size, saved
   at once; "Place build plate" puts the plate (top face at Z = 0, centred at X/Y = 0) and optionally the
   build volume lines on layer KO_HK. Anything on KO_HK is never written to the 3MF.
@@ -76,7 +82,7 @@ Hinweise
   Studio) – tick "Write a universal 3MF" in the gear for a neutral file.
 - Needs only Allplan 2027. Bambu Studio is optional. 3MFStudio speaks German when Allplan is set to German,
   English otherwise.
-- Install: drag 3MFStudio-1.1.3.allep into the Allplan window and follow the Plugin Manager, then restart
+- Install: drag 3MFStudio-1.1.4.allep into the Allplan window and follow the Plugin Manager, then restart
   Allplan. The tool is in the library under Private > Willi Liffers > 3MFStudio.
 - Without the Plugin Manager: close Allplan and copy the contents of the "Manuell" folder into your Allplan
   user folder …\Usr\Local\.

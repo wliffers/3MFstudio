@@ -135,6 +135,21 @@ ENGLISH: dict[str, str] = {
     "{number} Körper liegen auf dem Layer „{layer}“ (Hilfskonstruktion) und kommen nicht in die Datei.":
         "{number} bodies are on the layer “{layer}” (construction aid) and are left out of the file.",
     "Eigene Maße": "Custom size",
+    "3MFStudio: Filament dieses Körpers in der 3MF-Datei": "3MFStudio: filament of this body in the 3MF file",
+    "Allplan hat das Attribut „{name}“ nicht angelegt. Die Zuordnung gilt deshalb nur, solange Allplan läuft.":
+        "Allplan did not create the attribute “{name}”. The assignment therefore only lasts while Allplan is running.",
+    "Einen zugeordneten Körper gibt es im Modell nicht mehr (gelöscht oder Teilbild nicht geladen). Er ist aus der "
+    "Zuordnung genommen.":
+        "One assigned body is no longer in the model (deleted or drawing file not loaded). It was removed from the "
+        "assignment.",
+    "{number} zugeordnete Körper gibt es im Modell nicht mehr (gelöscht oder Teilbild nicht geladen). Sie sind aus "
+    "der Zuordnung genommen.":
+        "{number} assigned bodies are no longer in the model (deleted or drawing file not loaded). They were removed "
+        "from the assignment.",
+    "Ein Körper kam aus dem Modell dazu: eine Kopie eines zugeordneten Körpers oder ein früher zugeordneter Körper.":
+        "One body was added from the model: a copy of an assigned body or a body assigned earlier.",
+    "{number} Körper kamen aus dem Modell dazu: Kopien zugeordneter Körper oder früher zugeordnete Körper.":
+        "{number} bodies were added from the model: copies of assigned bodies or bodies assigned earlier.",
     "„{text}“ ist keine Zahl. Maße bitte in mm eingeben, z. B. 256.":
         "“{text}” is not a number. Please enter sizes in mm, e.g. 256.",
     "Maße müssen größer als 0 und höchstens {maximum} mm sein.":

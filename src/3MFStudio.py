@@ -84,7 +84,7 @@ threemf_window = importlib.reload(threemf_window)
 threemf_slicer = importlib.reload(threemf_slicer)
 threemf_bambu = importlib.reload(threemf_bambu)
 
-SCRIPT_BUILD = "3MFStudio 0.9.6 (2026-11-08)"
+SCRIPT_BUILD = "3MFStudio 0.9.7 (2026-11-09)"
 
 FILE_FILTER = "3MF-Datei (*.3mf)|*.3mf|"
 FILE_EXTENSION = "3mf"
@@ -217,8 +217,10 @@ class Studio3MF(BaseScriptObject):
         self.adapters: dict = state.adapters        # Kennung -> Bauteil, fuer die farbige Markierung
         state.session = self.session
         self.settings = threemf_slicer.load()       # Slicer-Programm; fehlt die Datei, gilt der Windows-Standard
+        self._attribute_warned = False              # "Attribut nicht angelegt" nur einmal je Werkzeugstart
         # Kein Fenster im Test-Loop und keines fuer die Vorschau der Bibliothek (is_only_update).
         if not self._headless and not self.is_only_update:
+            self._run(lambda: self._sync_with_model(fresh=False), "Zuordnung aus dem Modell")
             try:
                 self._window = threemf_window.open_window(self, self._view())
             except Exception:
@@ -417,6 +419,7 @@ class Studio3MF(BaseScriptObject):
             LOG.exception("Markierung liess sich nicht aufheben")
         bodies, skipped = self._bodies_of(elements)
         added, removed = self.session.pick(target, bodies)
+        self._store([body.key for body in bodies])
         for body in bodies if removed else []:
             self.adapters.pop(body.key, None)
         LOG.info("Filament %s: %s dazu, %s heraus", target, added, removed)
@@ -473,9 +476,11 @@ class Studio3MF(BaseScriptObject):
         return threemf_window.Busy(title, text, enabled=self._window is not None)
 
     def _clear(self, filament: int) -> None:
-        for key in self.session.keys(filament):
-            self.adapters.pop(key, None)
+        keys = self.session.keys(filament)
         LOG.info("Filament %s geleert (%s Koerper)", filament, self.session.clear(filament))
+        self._store(keys)
+        for key in keys:
+            self.adapters.pop(key, None)
         self._highlight(self._armed if self._armed > 0 else 0)
 
     def _highlight(self, filament: int) -> None:
@@ -542,6 +547,7 @@ class Studio3MF(BaseScriptObject):
     def _swap(self, first: int, second: int) -> None:
         moved = self.session.swap(first, second)
         LOG.info("Filament %s <-> %s getauscht (%s Koerper)", first, second, moved)
+        self._store(self.session.keys(first) + self.session.keys(second))
         self._recolour(first)
         self._recolour(second)
         self._highlight(self._armed)
@@ -643,11 +649,12 @@ class Studio3MF(BaseScriptObject):
             LOG.exception("Layer %s nicht aufloesbar", threemf_allplan.HELP_LAYER)
             return 0
 
-    def _release_help_layer(self) -> None:
-        """Vor dem Schreiben: zugeordnete Koerper, die inzwischen auf dem Hilfslayer liegen, kommen nicht in die Datei."""
+    def _release_help_layer(self) -> str:
+        """Vor dem Schreiben: zugeordnete Koerper, die inzwischen auf dem Hilfslayer liegen, kommen nicht in die Datei.
+        Rueckgabe: der Hinweis dazu ("" = keiner)."""
         layer = self._help_layer()
         if not layer:
-            return
+            return ""
         keys = []
         for key, adapter in list(self.adapters.items()):
             try:
@@ -656,17 +663,119 @@ class Studio3MF(BaseScriptObject):
             except Exception:
                 LOG.exception("Layer von %s nicht lesbar - Koerper bleibt zugeordnet", key)
         released = self.session.release(keys)
+        self._store(keys)
         for key in keys:
             self.adapters.pop(key, None)
-        if released:
-            LOG.info("%s Koerper auf %s aus der Zuordnung genommen", released, threemf_allplan.HELP_LAYER)
-            if released == 1:
-                text = tr("Ein Körper liegt auf dem Layer „{layer}“ (Hilfskonstruktion) und kommt nicht in die Datei.",
-                          layer=threemf_allplan.HELP_LAYER)
-            else:
-                text = tr("{number} Körper liegen auf dem Layer „{layer}“ (Hilfskonstruktion) und kommen nicht in "
-                          "die Datei.", number=released, layer=threemf_allplan.HELP_LAYER)
-            self._tell(text)
+        if not released:
+            return ""
+        LOG.info("%s Koerper auf %s aus der Zuordnung genommen", released, threemf_allplan.HELP_LAYER)
+        if released == 1:
+            return tr("Ein Körper liegt auf dem Layer „{layer}“ (Hilfskonstruktion) und kommt nicht in die Datei.",
+                      layer=threemf_allplan.HELP_LAYER)
+        return tr("{number} Körper liegen auf dem Layer „{layer}“ (Hilfskonstruktion) und kommen nicht in "
+                  "die Datei.", number=released, layer=threemf_allplan.HELP_LAYER)
+
+    # ------------------------------------------------------------------ Zuordnung im Modell
+
+    def _attribute(self, create: bool) -> int:
+        """ID des Attributs "3MF-Filament"; mit `create` legt Allplan es beim ersten Zuordnen an. 0 = keins."""
+        try:
+            attribute = threemf_allplan.filament_attribute(self.document, create)
+        except Exception:
+            LOG.exception("Attribut %s nicht verfuegbar", threemf_allplan.FILAMENT_ATTRIBUTE)
+            attribute = 0
+        if create and not attribute and not self._attribute_warned:
+            self._attribute_warned = True
+            self._tell(tr("Allplan hat das Attribut „{name}“ nicht angelegt. Die Zuordnung gilt deshalb nur, solange "
+                          "Allplan läuft.", name=threemf_allplan.FILAMENT_ATTRIBUTE) + " " + log_hint())
+        return attribute
+
+    def _store(self, keys: list) -> None:
+        """Schreibt die Zuordnung dieser Koerper als Attribut an die Bauteile; nicht mehr zugeordnete verlieren es.
+
+        So bleibt die Zuordnung am Koerper: beim Aendern, Verschieben und Kopieren in Allplan (live 2026-11-09)
+        und ueber einen Neustart hinweg."""
+        assignment = self.session.assignment()
+        groups: dict[int, list] = {}
+        for key in keys:
+            adapter = self.adapters.get(key)
+            if adapter is not None:
+                groups.setdefault(assignment.get(key, 0), []).append(adapter)
+        if not groups:
+            return
+        attribute = self._attribute(create=any(groups))
+        if not attribute:
+            return
+        for filament, adapters in groups.items():
+            try:
+                threemf_allplan.set_filament(adapters, attribute, filament)
+            except Exception:
+                LOG.exception("Attribut %s=%s an %s Koerpern nicht geschrieben", threemf_allplan.FILAMENT_ATTRIBUTE,
+                              filament, len(adapters))
+        LOG.info("Zuordnung im Modell: %s", {filament: len(adapters) for filament, adapters in groups.items()})
+
+    def _sync_with_model(self, fresh: bool) -> list:
+        """Gleicht die Zuordnung mit dem Modell ab: das Attribut am Koerper zaehlt.
+
+        - zugeordnete Koerper, die es nicht mehr gibt (geloescht, Teilbild nicht geladen), fallen heraus;
+        - Koerper mit Attribut, die die Sitzung nicht kennt (Kopien, Zuordnung vor einem Neustart), kommen dazu;
+        - `fresh`: die Form jedes Koerpers wird neu gelesen - geaenderte Geometrie kommt so in die Datei.
+        Rueckgabe: Hinweise fuer den Anwender."""
+        attribute = self._attribute(create=False)
+        found: dict[str, tuple] = {}
+        if attribute:
+            for element, filament in threemf_allplan.marked_elements(self.document, attribute):
+                found[str(element.GetElementUUID())] = (element, filament)
+        help_layer = self._help_layer()
+        gone, moved, unmarked, refreshed, added = [], 0, [], 0, 0
+        for key, filament in self.session.assignment().items():
+            element, model_filament = found.get(key, (None, 0))
+            if element is None:
+                element = threemf_allplan.element_by_key(key, self.document)
+            if element is None:
+                gone.append(key)
+                continue
+            self.adapters[key] = element
+            if not model_filament:
+                unmarked.append(key)            # zugeordnet, bevor es das Attribut gab
+            body = self._body_of(element) if fresh else self.session.body(key)
+            if body is None:
+                gone.append(key)                # kein druckbarer Koerper mehr
+                continue
+            if model_filament and model_filament != filament:
+                self.session.assign(model_filament, [body])
+                moved += 1
+            elif fresh:
+                refreshed += self.session.refresh(body)
+        released = self.session.release(gone)
+        for key in gone:
+            self.adapters.pop(key, None)
+        known = self.session.assignment()
+        for key, (element, filament) in found.items():
+            if key in known or threemf_allplan.on_layer(element, help_layer):
+                continue
+            body = self._body_of(element)
+            if body is not None:
+                self.session.assign(filament, [body])
+                added += 1
+        if fresh and unmarked:
+            self._store(unmarked)
+        LOG.info("Abgleich mit dem Modell (frisch=%s): %s mit Attribut, %s neu gelesen, %s dazu, %s umgezogen, "
+                 "%s heraus, %s ohne Attribut", fresh, len(found), refreshed, added, moved, released, len(unmarked))
+        notes = []
+        if released == 1:
+            notes.append(tr("Einen zugeordneten Körper gibt es im Modell nicht mehr (gelöscht oder Teilbild nicht "
+                            "geladen). Er ist aus der Zuordnung genommen."))
+        elif released:
+            notes.append(tr("{number} zugeordnete Körper gibt es im Modell nicht mehr (gelöscht oder Teilbild nicht "
+                            "geladen). Sie sind aus der Zuordnung genommen.", number=released))
+        if added == 1:
+            notes.append(tr("Ein Körper kam aus dem Modell dazu: eine Kopie eines zugeordneten Körpers oder ein "
+                            "früher zugeordneter Körper."))
+        elif added:
+            notes.append(tr("{number} Körper kamen aus dem Modell dazu: Kopien zugeordneter Körper oder früher "
+                            "zugeordnete Körper.", number=added))
+        return notes
 
     # ------------------------------------------------------------------ Datei
 
@@ -674,7 +783,11 @@ class Studio3MF(BaseScriptObject):
         if self._armed:
             self._stop_input()
             self._highlight(0)
-        self._release_help_layer()
+        with self._busy(tr("Körper werden gelesen")):
+            notes = self._sync_with_model(fresh=True)
+        notes.append(self._release_help_layer())
+        if any(notes):
+            self._tell("\n\n".join(note for note in notes if note))
         parts = self.session.parts()                # meldet "nichts zugeordnet" und einen unsinnigen Massstab
         chosen = ask_save_file("")
         if not chosen:
@@ -847,6 +960,8 @@ class Studio3MF(BaseScriptObject):
             self.adapters[key] = element
             rgb = threemf_model.hex_rgb(part.colour) or palette.get(colour, (0, 0, 0))
             self.session.assign(part.filament, [threemf_session.Body(key, part.name, colour, rgb, part)])
+        self._store([str(element.GetElementUUID()) for element, (piece, _colour) in zip(created, pieces)
+                     if piece is not None])
         if result.application.startswith(threemf_writer.APPLICATION):
             self.session.names.update(threemf_session.names_from_parts(result.parts))
         LOG.info("nach dem Import zugeordnet: %s", {n: self.session.count(n)

@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/Version-1.1.2-2563eb">
+  <img alt="Version" src="https://img.shields.io/badge/Version-1.1.4-2563eb">
   <img alt="Allplan" src="https://img.shields.io/badge/Allplan-2027-0f766e">
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-6b7280">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-16a34a"></a>
@@ -65,6 +65,12 @@ helps when an inner body is hard to click in the model.
 **Keep element groups together.**
 Bodies that belong to an Allplan element group and share a filament are exported as one part named after
 the group. In the slicer you recolour that part in one step.
+
+**The assignment stays with the body.**
+3MFStudio writes the filament as attribute **3MF-Filament** to every assigned body. If you edit, move, copy
+or apply Boolean operations to bodies in Allplan, the assignment is kept; a copy comes with its filament.
+When bodies are united (Boolean union), the filament of the body clicked first applies. Writing the file reads the current
+shape of each body, and after an Allplan restart the assignment is back.
 
 **Build volume and build plate for orientation.**
 The cube icon next to the gear opens the build volume card. Pick a printer from a list of 93 models or enter
@@ -170,6 +176,8 @@ You then set colours and material types in the slicer.
 
 - **In the 3MF file:** the contents from the table above. No project data, attributes or file paths from
   Allplan are exported.
+- **In the Allplan model:** the user attribute `3MF-Filament` (filament number 1–16) on assigned bodies.
+  3MFStudio creates it in the project on the first assignment.
 - **On your computer:** settings in `C:\Users\<USER>\AppData\Roaming\3MFStudio\einstellungen.json` and a
   log for troubleshooting in `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 - **From Bambu Studio:** settings and profiles are only read, never changed.
@@ -180,6 +188,12 @@ You then set colours and material types in the slicer.
 - Rounded free-form shapes are not converted into smooth faces on import (see above).
 - Painting on individual faces is not imported.
 - 3MFStudio does not check whether a model fits the build volume. The build plate helps you judge this.
+- Mandatory 3MF extensions other than Production, Materials and Triangle Sets are not supported; such files
+  are refused (see above).
+- Name, colour and filament series of the filament cards are not stored in the model. After an Allplan
+  restart the assignment is back, but the cards show the Allplan colour of the bodies again.
+- Assigned bodies are searched in all editable loaded drawing files. Bodies of another print job loaded
+  there are written to the file as well.
 - On-screen colours are approximations. The printed filament may differ.
 - If something fails, the reason is in the log `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 
@@ -209,4 +223,4 @@ passing them on, and back up your Allplan projects – see [HAFTUNGSAUSSCHLUSS.m
 Third-party parts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). ALLPLAN is a trademark of ALLPLAN GmbH /
 Nemetschek Group; Bambu Lab and Bambu Studio are trademarks of Bambu Lab. 3MFStudio is independent of both.
 
-<p align="center">Version 1.1.2 · last reviewed 2026-11-08</p>
+<p align="center">Version 1.1.4 · last reviewed 2026-11-09</p>

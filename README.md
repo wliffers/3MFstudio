@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/Version-1.1.2-2563eb">
+  <img alt="Version" src="https://img.shields.io/badge/Version-1.1.4-2563eb">
   <img alt="Allplan" src="https://img.shields.io/badge/Allplan-2027-0f766e">
   <img alt="Plattform" src="https://img.shields.io/badge/Plattform-Windows-6b7280">
   <a href="LICENSE"><img alt="Lizenz" src="https://img.shields.io/badge/Lizenz-MIT-16a34a"></a>
@@ -65,6 +65,13 @@ Filamentkarte. Das ist hilfreich, wenn ein innenliegender Körper im Modell schw
 **Elementgruppen zusammenhalten.**
 Körper, die in Allplan zu einer Elementgruppe zusammengefasst sind und dasselbe Filament haben, werden als
 ein Teil mit dem Namen der Gruppe exportiert. Im Slicer lässt sich dieses Teil in einem Schritt umfärben.
+
+**Die Zuordnung bleibt am Körper.**
+3MFStudio schreibt das Filament als Attribut **3MF-Filament** an jeden zugeordneten Körper. Änderst,
+verschiebst, kopierst oder verschneidest du Körper in Allplan, bleibt die Zuordnung erhalten; eine Kopie
+kommt mit ihrem Filament. Bei „Körper vereinigen“ gilt das Filament des zuerst angeklickten Körpers. Beim
+Schreiben liest 3MFStudio die aktuelle Form jedes Körpers, und nach einem Neustart von Allplan ist die
+Zuordnung wieder da.
 
 **Bauraum und Druckplatte als Orientierung.**
 Das Würfel-Symbol neben dem Zahnrad öffnet die Bauraum-Karte. Dort wählst du einen Drucker aus einer Liste
@@ -182,6 +189,8 @@ Datei und meldet das. Farben und Materialtypen legst du dann im Slicer fest.
 
 - **In der 3MF-Datei:** die Inhalte aus der Tabelle oben. Projektdaten, Attribute oder Dateipfade aus
   Allplan werden nicht exportiert.
+- **Im Allplan-Modell:** das Benutzerattribut `3MF-Filament` (Filamentnummer 1–16) an zugeordneten Körpern.
+  3MFStudio legt es beim ersten Zuordnen im Projekt an.
 - **Auf deinem Rechner:** Einstellungen unter `C:\Users\<USER>\AppData\Roaming\3MFStudio\einstellungen.json`
   und ein Protokoll für die Fehlersuche unter `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 - **Von Bambu Studio:** Einstellungen und Profile werden nur gelesen und nicht verändert.
@@ -194,6 +203,10 @@ Datei und meldet das. Farben und Materialtypen legst du dann im Slicer fest.
 - 3MFStudio prüft nicht, ob ein Modell in den Bauraum passt. Dafür kannst du die Druckplatte einblenden.
 - Pflicht-Erweiterungen von 3MF außer Produktion, Material und Dreiecksgruppen werden nicht unterstützt;
   solche Dateien werden abgelehnt (siehe oben).
+- Name, Farbe und Filamentserie der Filamentkarten werden nicht im Modell gespeichert. Nach einem Neustart
+  von Allplan ist die Zuordnung wieder da, die Karten zeigen aber wieder die Allplan-Farbe der Körper.
+- Zugeordnete Körper werden in allen bearbeitbaren geladenen Teilbildern gesucht. Liegen dort Körper aus
+  einem anderen Druckauftrag, kommen sie mit in die Datei.
 - Bildschirmfarben sind Näherungen. Das gedruckte Filament kann abweichen.
 - Wenn etwas nicht funktioniert, steht der Grund im Protokoll `C:\Users\<USER>\Documents\3MFStudio_debug.log`.
 
@@ -243,4 +256,4 @@ ist ein Neustart von Allplan nötig. Der Ablauf eines Releases steht in [docs/RE
 
 ---
 
-<p align="center">Version 1.1.2 · zuletzt geprüft am 2026-11-08</p>
+<p align="center">Version 1.1.4 · zuletzt geprüft am 2026-11-09</p>

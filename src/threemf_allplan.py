@@ -24,6 +24,7 @@ import NemAll_Python_BaseElements as AllplanBaseEle
 import NemAll_Python_BasisElements as AllplanBasisEle
 import NemAll_Python_Geometry as AllplanGeo
 import NemAll_Python_IFW_ElementAdapter as AllplanElementAdapter
+import NemAll_Python_Utility as AllplanUtil
 
 from TypeCollections.Curve3DList import Curve3DList
 
@@ -276,6 +277,77 @@ def layer_id(short_name: str, document) -> int:
 def on_layer(element, layer: int) -> bool:
     """True, wenn das Bauteil auf dem Layer mit dieser ID liegt; 0 = kein Layer, nie wahr."""
     return bool(layer) and int(element.GetCommonProperties().Layer) == layer
+
+
+# ------------------------------------------------------------------------- Zuordnung im Modell
+
+FILAMENT_ATTRIBUTE = "3MF-Filament"         # Benutzerattribut am Koerper: die Filamentnummer (1-16)
+ATTRIBUTE_FOLDER = "3MFStudio"
+
+
+def filament_attribute(document, create: bool) -> int:
+    """ID des Attributs "3MF-Filament" in diesem Projekt; fehlt es, mit `create` anlegen. 0 = gibt es nicht.
+
+    Live 2026-11-09 (Teilbild 903): GetAttributeID liefert -1 fuer einen unbekannten Namen, AddUserAttribute die
+    neue ID (5001, Typ Integer); danach findet GetAttributeID dieselbe ID."""
+    found = int(AllplanBaseEle.AttributeService.GetAttributeID(document, FILAMENT_ATTRIBUTE))
+    if found > 0 or not create:
+        return max(found, 0)
+    made = int(AllplanBaseEle.AttributeService.AddUserAttribute(
+        document, AllplanBaseEle.AttributeService.AttributeType.Integer, FILAMENT_ATTRIBUTE, "0", 0.0, 16.0, "",
+        AllplanBaseEle.AttributeService.AttributeControlType.Edit, AllplanUtil.VecStringList(),
+        tr("3MFStudio: Filament dieses Körpers in der 3MF-Datei"), 60, ATTRIBUTE_FOLDER, True, True, ""))
+    LOG.info("Attribut %s angelegt: ID %s", FILAMENT_ATTRIBUTE, made)
+    return max(made, 0)
+
+
+def filament_of(element, attribute: int) -> int:
+    """Filamentnummer am Bauteil; 0 = keine. Liest ohne Geometrie-Attribute (live 0,003 ms je Bauteil)."""
+    if not attribute:
+        return 0
+    value = dict(element.GetAttributes(AllplanBaseEle.eAttibuteReadState.ReadWithoutGeometry)).get(attribute, 0)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def set_filament(elements: list, attribute: int, filament: int) -> list:
+    """Schreibt die Filamentnummer an die Bauteile; 0 loescht das Attribut. Rueckgabe: die Bauteile danach.
+
+    Live 2026-11-09: ChangeAttribute behaelt die Kennung; Aendern der Geometrie, Verschieben (ModifyElements)
+    und Kopieren behalten das Attribut - die Kopie traegt dasselbe Filament."""
+    targets = AllplanElementAdapter.BaseElementAdapterList()
+    for element in elements:
+        targets.append(element)
+    return list(AllplanBaseEle.ElementsAttributeService.ChangeAttribute(
+        attribute, filament if filament else 0, targets, False, not filament))
+
+
+def marked_elements(document, attribute: int) -> list:
+    """Alle Bauteile der bearbeitbaren Teilbilder mit einer Filamentnummer: [(Bauteil, Filament)].
+
+    Passive Teilbilder (negative Nummer, brain 2026-10-20) zaehlen nicht - dort laesst sich nichts zuordnen."""
+    if not attribute:
+        return []
+    found = []
+    for element in AllplanBaseEle.ElementsSelectService.SelectAllElements(document):
+        if element.GetDrawingfileNumber() < 0:
+            continue
+        filament = filament_of(element, attribute)
+        if filament > 0:
+            found.append((element, filament))
+    return found
+
+
+def element_by_key(key: str, document):
+    """Das Bauteil zur Kennung; None, wenn es geloescht oder nicht geladen ist (FromGUID, wie AI ModelLink)."""
+    try:
+        element = AllplanElementAdapter.BaseElementAdapter.FromGUID(AllplanElementAdapter.GUID.FromString(key),
+                                                                    document)
+    except Exception:
+        return None
+    return None if element.IsNull() else element
 
 
 def layer_name_of(element, document) -> str:

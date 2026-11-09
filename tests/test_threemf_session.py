@@ -236,3 +236,16 @@ def test_bodies_moved_to_the_help_layer_leave_the_assignment():
     assert session.release(["b", "c", "gibt-es-nicht"]) == 2
     assert [part.filament for part in session.parts()] == [1]
     assert session.release(["b"]) == 0
+
+
+def test_a_changed_body_replaces_its_old_shape_in_the_file():
+    """Kundenwunsch 2026-11-09: Geometrie in Allplan geaendert -> die Datei bekommt die neue Form, Filament und
+    Reihenfolge bleiben; unbekannte Kennungen werden nicht aufgenommen."""
+    session = Session()
+    session.assign(1, [body("a", box(0, 0, 0, 10, 10, 10)), body("b", box(20, 0, 0, 10, 10, 10))])
+    session.assign(2, [body("c", box(40, 0, 0, 10, 10, 10))])
+    assert session.refresh(body("a", box(0, 0, 0, 30, 10, 10)))
+    assert not session.refresh(body("fremd", box(0, 0, 0, 5, 5, 5)))
+    assert session.assignment() == {"a": 1, "b": 1, "c": 2}
+    widths = [round(max(v[0] for v in part.vertices) - min(v[0] for v in part.vertices)) for part in session.parts()]
+    assert widths == [30, 10, 10]

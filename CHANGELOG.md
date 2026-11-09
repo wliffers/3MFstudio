@@ -3,6 +3,19 @@
 Alle nennenswerten Änderungen an 3MFStudio. Die Paketnummer (z. B. 1.1.2) ist die des `.allep`;
 der Plugin-Manager von Allplan bietet nur bei höherer Nummer ein Update an.
 
+## [1.1.4] – 2026-11-09
+
+### Neu
+- **Die Zuordnung bleibt am Körper:** 3MFStudio schreibt das Filament als Benutzerattribut „3MF-Filament“
+  (Ordner „3MFStudio“) an jeden zugeordneten Körper und legt das Attribut beim ersten Zuordnen im Projekt an.
+  Ändern, Verschieben und Kopieren in Allplan behalten die Zuordnung, eine Kopie kommt mit ihrem Filament.
+  Bei „Körper vereinigen“ gilt das Filament des zuerst angeklickten Körpers, bei „K1 minus K2“ behält K1
+  seins. Nach einem Neustart von Allplan baut 3MFStudio die Zuordnung aus dem Modell wieder auf.
+  (Anregung aus der Community – danke!)
+- **Aktuelle Form beim Schreiben:** Vor „3MF schreiben“ liest 3MFStudio die Form jedes zugeordneten Körpers
+  frisch aus Allplan. Geänderte Geometrie muss nicht neu zugeordnet werden. Gelöschte Körper fallen mit einem
+  Hinweis aus der Zuordnung.
+
 ## [1.1.3] – 2026-11-08
 
 ### Neu

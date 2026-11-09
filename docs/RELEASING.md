@@ -10,6 +10,7 @@ Repo-Ordner wird daraus zusammengestellt.
 - `src/3MFStudio.py`: `SCRIPT_BUILD` anpassen (steht im Protokoll, hilft bei Fehlermeldungen).
 - `LIESMICH_Installation.txt`: Versionsnummer in Überschrift und Dateinamen.
 - `CHANGELOG.md`: Abschnitt für die neue Fassung.
+- `README.md` und `README.en.md`: Versions-Abzeichen oben und Fußzeile unten (Nummer und Datum).
 
 ## 2. Prüfen
 

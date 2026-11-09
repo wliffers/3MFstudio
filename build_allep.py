@@ -37,7 +37,7 @@ README = os.path.join(HERE, "LIESMICH_Installation.txt")
 PLUGIN_NAME = "3MFStudio"
 PLUGIN_UUID = "dd4d9405-17ab-4674-88e1-0f0dad922584"   # nie aendern - der Plugin-Manager erkennt Updates daran
 #: Muss bei jeder Weitergabe steigen (SemVer), sonst bietet der Plugin-Manager kein Update an.
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 #: Hersteller im Plugin-Manager und Bibliotheksordner (Entscheidung des Anwenders, 2026-11-07).
 DEVELOPER = "Willi Liffers"
 #: Python-taugliche Form fuer Programm- und Actionbar-Ordner (kein Leerzeichen in Modulpfaden).

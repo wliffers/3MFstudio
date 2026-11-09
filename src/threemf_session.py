@@ -229,6 +229,17 @@ class Session:
     def body(self, key: str) -> Body | None:
         return self._bodies.get(key)
 
+    def assignment(self) -> dict[str, int]:
+        """Kennung -> Filament, in der Reihenfolge der Zuordnung (Kopie)."""
+        return dict(self._filament)
+
+    def refresh(self, body: Body) -> bool:
+        """Ein zugeordneter Koerper mit frisch gelesener Form; Filament und Reihenfolge bleiben."""
+        if body.key not in self._filament:
+            return False
+        self._bodies[body.key] = body
+        return True
+
     def units(self, filament: int | None = None) -> list[tuple[int, list[Body]]]:
         """Die Einheiten fuer die Datei: jeder lose Koerper fuer sich, die Koerper einer Elementgruppe auf
         demselben Filament zusammen - in der Reihenfolge ihrer ersten Zuordnung. `filament` schraenkt ein."""
